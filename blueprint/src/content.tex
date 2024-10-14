@@ -33,7 +33,7 @@ is entire.
 
 \section{A more detailed plan}
 
-\begin{lemma} \label{product-lower-bound}
+\begin{lemma} \label{product_lower_bound}
   \lean{norm_dirichlet_product_ge_one}
   \leanok
   Let $\chi$ be a Dirichlet character modulo~$N$. Then for all $\varepsilon > 0$, we have
@@ -47,13 +47,13 @@ is entire.
   This follows from a trigonometric inequality.
 \end{proof}
 
-\begin{lemma} \label{non-quadratic}
+\begin{lemma} \label{non_quadratic}
   Let $t \in \R$ and let $\chi$ be a Dirichlet character. If $t \ne 0$ or $\chi^2 \ne 1$, then
   \[ L(\chi, 1 + it) \ne 0 \,. \]
 \end{lemma}
 
 \begin{proof}
-  \uses{product-lower-bound}
+  \uses{product_lower_bound}
   Assume that $L(\chi, 1 + it) = 0$. Then the (at lesat) quadruple zero of~$L(\chi, s)^4$ at $1 + it$
   will more than compensate for the triple pole of~$L(1, s)^3$ at~$1$, so the product of the first
   two factors in~\eqref{eqn:product} will tend to zero as $\eps \searrow 0$.
@@ -73,7 +73,7 @@ So it suffices to prove that if $\chi$ is a quadratic character we have $L(\chi,
 \begin{definition} \label{def:bad_char_F}
   \lean{BadChar.F}
   \leanok
-  Define $F : \mathbb{C} \to \mathbb{C}$ by
+  Define $F \colon \mathbb{C} \to \mathbb{C}$ by
   \[ F(s) = \begin{cases}
     \zeta(s) L(\chi, s) & \text{if $s \ne 1$} \\
     L'(\chi, 1) & \text{if $s = 1$}
@@ -82,7 +82,7 @@ So it suffices to prove that if $\chi$ is a quadratic character we have $L(\chi,
 \end{definition}
 
 \begin{lemma} \label{F_entire}
-  $F$ is an entire function.
+  If $\chi$ is a bad character, then $F$ is an entire function.
 \end{lemma}
 
 \begin{proof}
@@ -114,3 +114,45 @@ So it suffices to prove that if $\chi$ is a quadratic character we have $L(\chi,
   It suffices to show this for prime powers. We have $e(p^k) = (k + 1)$ if $\chi(p) = 1$, $e(p^k) = 1$ if $\chi(p) = 0$, and if $\chi(p) = -1$ then $e(p^k) = 1$ if $k$ even, $0$ if $k$ odd.
 \end{proof}
 
+\begin{lemma} \label{positivity_from_derivs}
+  \lean{Complex.at_zero_le_of_iteratedDeriv_alternating}
+  \leanok
+  An entire function $f$ whose iterated derivatives at zero are all real with alternating signs
+  (except possibly the value itself) has values of the form $f(0) + \text{nonneg. real}$
+  along the nonpositive real axis.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  This follows by considering the power series expansion at zero.
+\end{proof}
+
+\begin{lemma} \label{derivs_from_coeffs}
+  If $a \colon \N \to \C$ is an arithmetic function with $a(1) > 0$ and $a(n) \ge 0$ for all $n \ge 2$
+  and the associated $L$-series $f(s) = \sum_{n \ge 1} a(n) n^{-s}$ converges at $x \in \R$, then
+  the iterated derivative $f^{(m)}(x)$ is nonnegative for $m$ even and nonpositive for $m$ odd.
+\end{lemma}
+
+\begin{proof}
+  The $m$th derivative of~$f$ at~$x$ is given by
+  \[ f^{(m)(x) = \sum_{n=1}^\infty (-\log n)^m a(n) n^{-x} = (-1)^m \sum_{n=1}^\infty (\log n)^m a(n) n^{-x} \,, \]
+  and the last sum has only nonnegative summands.
+\end{proof}
+
+\begin{theorem} \label{quadratic_char_nonvanishing}
+  If $\chi$ is a nontrivial Dirichlet character, then $L(\chi, 1) \ne 0$.
+\end{theorem}
+
+\begin{proof}
+  \uses{non_quadratic, F_entire, zero_of_F, F_Euler_product, nonneg_coeffs, positivity_from_derivs, derivs_from_coeffs}
+  If $\chi$ is not a quadratic character, then the claim is Lemma~\ref{non_quadratic}.
+  So it suffices to consider quadratic characters~$\chi$.
+  Assume that $L(\chi, 1) = 0$, so $\chi$ is a bad character. By Lemma~\ref{F_entire}, we then know
+  that $F$ is an entire function. From Lemmas \ref{F_Euler_product} and~\ref{nonneg_coeffs} we see
+  that $F$ agrees on $\Re s > 1$ with the $L$-series of an arithmetic function with nonnegative
+  real values (and positive value at~$1$). Lemma~\ref{derivs_from_coeffs} now shows that
+  $(-1)^m F^{(m)}(2) \ge 0$ for all~$m \ge 1$. Then Lemma~\ref{positivity_from_derivs}
+  (applied to $f(s) = F(2+s)$) implies that $F(x) > 0$ for all $x \le 2$. This now
+  contradicts Lemma~\ref{zero_of_F}, which says that $F(-2) = 0$. So the initial assumption
+  must be false, showing that $L(\chi, 1) \ne 0$.
+\end{proof}
