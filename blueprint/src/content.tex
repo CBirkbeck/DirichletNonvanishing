@@ -64,13 +64,13 @@ is entire.
 
 So it suffices to prove that if $\chi$ is a quadratic character we have $L(\chi, 1) \ne 0$.
 
-\begin{definition}
+\begin{definition} \label{def:bad_char}
   \lean{BadChar}
   \leanok
   A \emph{bad character} is an $\R$-valued (hence quadratic) Dirichlet character such that $L(\chi, 1) = 0$.
 \end{definition}
 
-\begin{definition}
+\begin{definition} \label{def:bad_char_F}
   \lean{BadChar.F}
   \leanok
   Define $F : \mathbb{C} \to \mathbb{C}$ by
@@ -81,7 +81,7 @@ So it suffices to prove that if $\chi$ is a quadratic character we have $L(\chi,
   \]
 \end{definition}
 
-\begin{lemma}
+\begin{lemma} \label{F_entire}
   $F$ is an entire function.
 \end{lemma}
 
@@ -89,7 +89,7 @@ So it suffices to prove that if $\chi$ is a quadratic character we have $L(\chi,
   This is easy for $s \ne 1$ since we know analyticity of both factors. To prove analyticity at $s = 1$, it suffices to show continuity (Riemann criterion) and that should follow easily since we know that $\lim_{s \to 1} (s - 1) \zeta(s)$ exists.
 \end{proof}
 
-\begin{lemma}
+\begin{lemma} \label{zero_of_F}
   We have $F(-2) = 0$.
 \end{lemma}
 
@@ -97,7 +97,7 @@ So it suffices to prove that if $\chi$ is a quadratic character we have $L(\chi,
   Follows from the analyticity of $L(\chi, s)$ and the trivial zeroes of Riemann zeta.
 \end{proof}
 
-\begin{lemma}
+\begin{lemma} \label{F_Euler_product}
   For $\Re(s) > 1$, $F(s)$ is equal to the Euler product
   \[ \mathcal{E}(s) \coloneqq \prod_p \left[ (1 - p^{-s}) (1 - \chi(p) p^{-s})\right]^{-1}. \]
 \end{lemma}
@@ -106,10 +106,11 @@ So it suffices to prove that if $\chi$ is a quadratic character we have $L(\chi,
   We have Euler products for both $L(\chi, s)$ and $\zeta(s)$.
 \end{proof}
 
-\begin{lemma}
+\begin{lemma} \label{nonneg_coeffs}
   The weakly multiplicative function $e(n)$ whose Euler product is $\mathcal{E}$ takes non-negative real values.
 \end{lemma}
 
 \begin{proof}
   It suffices to show this for prime powers. We have $e(p^k) = (k + 1)$ if $\chi(p) = 1$, $e(p^k) = 1$ if $\chi(p) = 0$, and if $\chi(p) = -1$ then $e(p^k) = 1$ if $k$ even, $0$ if $k$ odd.
 \end{proof}
+
