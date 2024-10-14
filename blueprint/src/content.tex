@@ -119,15 +119,20 @@ So it suffices to prove that if $\chi$ is a quadratic character we have $L(\chi,
 
 \begin{lemma} \label{F_Euler_product}
   \uses{def:bad_char_F}
-  For $\Re(s) > 1$, $F(s)$ is equal to the Euler product
-  \[ \mathcal{E}(s) := \prod_p \left[ (1 - p^{-s}) (1 - \chi(p) p^{-s})\right]^{-1}. \]
+  \lean{BadChar.F_eq_LSeries}
+  \leanok
+  For $\Re(s) > 1$, $F(s)$ is equal to the $L$-series of a real-valued
+  arithmetic function $e$ defined as the convolution of constant 1 and $\chi$.
 \end{lemma}
 
 \begin{proof}
   We have Euler products for both $L(\chi, s)$ and $\zeta(s)$.
 \end{proof}
 
-\begin{lemma} \label{nonneg_coeffs}
+\begin{lemma}
+  \label{nonneg_coeffs}
+  \lean{BadChar.e_nonneg}
+  \leanok
   The weakly multiplicative function $e(n)$ whose Euler product is $\mathcal{E}$ takes non-negative real values.
 \end{lemma}
 
