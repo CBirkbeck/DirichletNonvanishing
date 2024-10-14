@@ -1,1 +1,0 @@
-import Dirichlet_NonVanishing.Example
