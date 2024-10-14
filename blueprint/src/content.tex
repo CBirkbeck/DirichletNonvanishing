@@ -9,5 +9,17 @@
 
 \section{What this project is about}
 
-We're trying to prove that $L(\chi, 1) \ne 0$ for a non-trivial Dirichlet character $\chi$.
+We're trying to prove that for a non-trivial Dirichlet character $\chi$, we have $L(\chi, 1 + it) \ne 0$ for all real $t$.
 
+High-level outline:
+
+\begin{itemize}
+
+\item If $t \ne 0$ or if $\chi^2 \ne 1$ then this follows from the product for $\zeta(s)^3 L(\chi, s)^{-4} L(\chi^2, s)$ which is in \texttt{EulerProducts}. So we may assume that $t = 0$ and $\chi$ is quadratic.
+
+\item Assume for contradiction $L(\chi, 1) = 0$. Then the function
+\[ F(s) = L(\chi, s) \zeta(s) \]
+is entire.
+
+\item For $\Re(s) > 1$, $F(s)$ is given by a convergent Euler product with local factors XXX. Hence its Dirichlet series coefficients are positive real numbers.
+\end{itemize}
