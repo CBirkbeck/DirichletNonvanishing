@@ -57,8 +57,11 @@ lemma BadChar.F_differentiable (B : BadChar N) : Differentiable ℂ B.F := by
       · simp only [dist_self, hε]
       · simpa only [H, Function.update_noteq ha', Function.update_same] using ha ha'
 
-lemma BadChar.F_neg_two (B : BadChar N) : F (-2) = 0 := by
+lemma BadChar.F_neg_two (B : BadChar N) : B.F (-2) = 0 := by
+  simp only [BadChar.F]
+  rw [Function.update_noteq (mod_cast (by omega : (-2 : ℤ) ≠ 1))]
   sorry
+
 
 /-- The goal: bad characters do not exist. -/
 theorem BadChar.elim (B : BadChar N) : False :=
