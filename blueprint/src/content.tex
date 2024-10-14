@@ -11,7 +11,7 @@
 
 We're trying to prove that for a non-trivial Dirichlet character $\chi$, we have $L(\chi, 1 + it) \ne 0$ for all real $t$.
 
-High-level outline:
+\section{High-level outline}:
 
 \begin{itemize}
 
@@ -22,4 +22,11 @@ High-level outline:
 is entire.
 
 \item For $\Re(s) > 1$, $F(s)$ is given by a convergent Euler product with local factors XXX. Hence its Dirichlet series coefficients are positive real numbers.
+
+\item Hence the iterated derivatives of $F(s)$ on $(0, \infty)$ alternate in sign.
+
+\item By an analytic result from \texttt{EulerProducts}, this implies that $F(s)$ is real and non-vanishing for all real $s$.
+
+
+\item However, if $\chi$ is even then $F(0) = 0$, and if $\chi$ is odd then $F(-1) = 0$. This gives the desired contradiction.
 \end{itemize}
