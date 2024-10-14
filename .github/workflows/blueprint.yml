@@ -59,9 +59,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            .lake/build
-            !.lake/build/doc-data
-            !.lake/build/doc/declarations/declaration-data-equational_theories*
+            .lake/build/doc
           key: LakeBuild-${{ runner.os }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}-${{ github.sha }}
           restore-keys: LakeBuild-
 
