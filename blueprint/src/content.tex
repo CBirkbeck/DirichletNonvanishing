@@ -34,9 +34,18 @@ is entire.
 \section{A more detailed plan}
 
 \begin{lemma} \label{product-lower-bound}
+  \lean{norm_dirichlet_product_ge_one}
+  \leanok
   Let $\chi$ be a Dirichlet character modulo~$N$. Then for all $\varepsilon > 0$, we have
-    \[ \||L(1, 1 + \eps)^3 L(\chi, 1 + \eps + it)^4 L(\chi^2, 1 + \eps + 2it)\|| \ge 1 \,. \]
+  \begin{equation} \label {eqn:product}
+    \||L(1, 1 + \eps)^3 L(\chi, 1 + \eps + it)^4 L(\chi^2, 1 + \eps + 2it)\|| \ge 1 \,.
+  \end{equation}
 \end{lemma}
+
+\begin{proof}
+  \leanok
+  This follows from a trigonometric inequality.
+\end{proof}
 
 \begin{lemma} \label{non-quadratic}
   Let $t \in \R$ and let $\chi$ be a Dirichlet character. If $t \ne 0$ or $\chi^2 \ne 1$, then
@@ -44,6 +53,10 @@ is entire.
 \end{lemma}
 
 \begin{proof}
-  This follows from the fact that
-
+  \uses{product-lower-bound}
+  Assume that $L(\chi, 1 + it) = 0$. Then the (at lesat) quadruple zero of~$L(\chi, s)^4$ at $1 + it$
+  will more than compensate for the triple pole of~$L(1, s)^3$ at~$1$, so the product of the first
+  two factors in~\eqref{eqn:product} will tend to zero as $\varepsilon \downrightarrow 0$.
+  If $t \ne 0$ or $\chi^2 \ne 1$, then the last factor will have a finite limit, and so the
+  full product will converge to zero, contradicting Lemma~\ref{product-lower-bound}.
 \end{proof}
