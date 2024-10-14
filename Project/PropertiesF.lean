@@ -151,6 +151,15 @@ lemma BadChar.e_nonneg (B : BadChar N) (n : ℕ) : 0 ≤ B.e n := by
   · simpa only [B.mult_e.multiplicative_factorization _ hn] using
       Finset.prod_nonneg fun p hp ↦ B.e_prime_pow (Nat.prime_of_mem_primeFactors hp) _
 
+open scoped ComplexOrder
+
+lemma derivs_from_coeffs (a : ArithmeticFunction ℂ) (h1 : 1 < a 1) (hn : ∀ n, 2 ≤ n → 0 ≤ a n)
+  (x : ℝ) (h : LSeriesSummable a x) (n : ℕ) :  0 ≤ (-1) ^ n * iteratedDeriv n (LSeries a) x := by
+
+  sorry
+
+
+
 /-- The goal: bad characters do not exist. -/
 theorem BadChar.elim (B : BadChar N) : False :=
   sorry
