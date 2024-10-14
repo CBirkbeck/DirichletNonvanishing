@@ -6,7 +6,11 @@ variable {N : ℕ} [NeZero N] {χ : DirichletCharacter ℂ N}
 
 theorem mainTheorem_quadratic (hχ : χ ^ 2 = 1) :
     χ.LFunction 1 ≠ 0 := by
-  sorry
+  intro hL
+  obtain ⟨ξ, rfl⟩ : ∃ ξ : DirichletCharacter ℝ N, χ = ξ.ringHomComp ofRealHom := by
+    sorry
+  let B : BadChar N := {χ₀ := ξ, hχ := hL}
+  exact B.elim
 
 theorem mainTheorem_general {t : ℝ} (h : χ ^ 2 ≠ 1 ∨ t ≠ 0) :
     χ.LFunction (1 + I * t) ≠ 0 :=
