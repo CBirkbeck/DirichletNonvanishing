@@ -156,9 +156,22 @@ open scoped ComplexOrder
 lemma derivs_from_coeffs (a : ArithmeticFunction ℂ) (h1 : 1 < a 1) (hn : ∀ n, 2 ≤ n → 0 ≤ a n)
   (x : ℝ) (h : LSeriesSummable a x) (n : ℕ) :  0 ≤ (-1) ^ n * iteratedDeriv n (LSeries a) x := by
   rw [LSeries_iteratedDeriv]
-  sorry
-  have := LSeriesSummable.abscissaOfAbsConv_le h
-  sorry
+  · rw [LSeries]
+    ring_nf
+    simp
+    apply tsum_nonneg
+    intro k
+    rw [LSeries.term_def]
+    rcases eq_or_ne k 0 with rfl | hn
+    · simp
+    · split_ifs
+      · rfl
+      · apply mul_nonneg
+
+        sorry
+        sorry
+  · have := LSeriesSummable.abscissaOfAbsConv_le h
+    sorry
 
 
 /-- The goal: bad characters do not exist. -/
