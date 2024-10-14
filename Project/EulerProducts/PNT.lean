@@ -1,5 +1,5 @@
-import EulerProducts.Auxiliary
-import EulerProducts.Logarithm
+import Project.EulerProducts.Auxiliary
+import Project.EulerProducts.Logarithm
 import Mathlib.Analysis.SpecialFunctions.Complex.LogBounds
 import Mathlib.NumberTheory.EulerProduct.DirichletLSeries
 import Mathlib.NumberTheory.LSeries.Dirichlet

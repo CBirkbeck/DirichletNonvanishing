@@ -1,6 +1,6 @@
 import Mathlib.NumberTheory.EulerProduct.DirichletLSeries
 import Mathlib.NumberTheory.LSeries.Dirichlet
-import EulerProducts.Logarithm
+import Project.EulerProducts.Logarithm
 
 /-!
 # Euler products for L-series
