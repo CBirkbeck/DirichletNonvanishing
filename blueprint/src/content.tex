@@ -88,3 +88,20 @@ is entire.
  \begin{proof}
   Follows from the analyticity of $L(\chi, s)$ and the trivial zeroes of Riemann zeta.
  \end{proof}
+
+ \begin{lemma}
+  For $\Re(s) > 1$, $F(s)$ is equal to the Euler product
+  \[ \mathcal{E}(s) \coloneqq \prod_p \left[ (1 - p^{-s}) (1 - \chi(p) p^{-s})\right]^{-1}. \]
+ \end{lemma}
+
+ \begin{proof}
+  We have Euler products for both $L(\chi, s)$ and $\zeta(s)$.
+ \end{proof}
+
+ \begin{lemma}
+  The weakly multiplicative function $e(n)$ whose Euler product is $\mathcal{E}$ takes non-negative real values.
+ \end{lemma}
+
+ \begin{proof}
+  It suffices to show this for prime powers. We have $e(p^k) = (k + 1)$ if $\chi(p) = 1$, $e(p^k) = 1$ if $\chi(p) = 0$, and if $\chi(p) = -1$ then $e(p^k) = 1$ if $k$ even, $0$ if $k$ odd.
+ \end{proof}
