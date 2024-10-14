@@ -1,5 +1,6 @@
 import Project.PropertiesF
 import Mathlib.NumberTheory.MulChar.Lemmas
+import Project.EasyCase
 
 open Complex
 
@@ -33,10 +34,6 @@ theorem mainTheorem_quadratic (hχ : χ ^ 2 = 1) (χ_ne : χ ≠ 1) : χ.LFuncti
     conv_lhs => rw [← re_add_im (χ a), this, ofReal_zero, zero_mul, add_zero]
   let B : BadChar N := {χ₀ := ξ, hχ := hL, χ_ne := χ_ne}
   exact B.elim
-
-theorem mainTheorem_general {t : ℝ} (h : χ ^ 2 ≠ 1 ∨ t ≠ 0) :
-    χ.LFunction (1 + I * t) ≠ 0 :=
-  sorry
 
 variable (χ) in
 theorem ourMainTheorem {N : ℕ} [NeZero N] {χ : DirichletCharacter ℂ N} (χ_ne : χ ≠ 1) (t : ℝ) :
