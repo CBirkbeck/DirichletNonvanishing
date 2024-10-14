@@ -60,3 +60,31 @@ is entire.
   If $t \ne 0$ or $\chi^2 \ne 1$, then the last factor will have a finite limit, and so the
   full product will converge to zero, contradicting Lemma~\ref{product-lower-bound}.
 \end{proof}
+
+
+ So it suffices to prove that if $\chi$ is a quadratic character we have $L(\chi, 1) \ne 0$. Suppose, for contradiction, that $\chi$ is such a character with $L(\chi, 1) = 0$. (XXX Does it help if we assume $\chi$ primitive mod $N$ as well?)
+
+ \begin{definition}
+  Define $F : \mathbb{C} \to \mathbb{C}$ by
+  \[ F(s) = \begin{cases}
+   \zeta(s) L(\chi, s) & \text{if $s \ne 1$} \\
+   L'(\chi, 1) & \text{if $s = 1$}
+   \end{cases}
+  \]
+ \end{definition}
+
+ \begin{lemma}
+  $F$ is an entire function.
+ \end{lemma}
+
+ \begin{proof}
+  This is easy for $s \ne 1$ since we know analyticity of both factors. To prove analyticity at $s = 1$, it suffices to show continuity (Riemann criterion) and that should follow easily since we know that $\lim_{s \to 1} (s - 1) \zeta(s)$ exists.
+ \end{proof}
+
+ \begin{lemma}
+  We have $F(-2) = 0$.
+ \end{lemma}
+
+ \begin{proof}
+  Follows from the analyticity of $L(\chi, s)$ and the trivial zeroes of Riemann zeta.
+ \end{proof}
