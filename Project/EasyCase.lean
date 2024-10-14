@@ -7,7 +7,7 @@ import Mathlib.NumberTheory.LSeries.DirichletContinuation
 
 variable {N : ℕ} [NeZero N] {χ : DirichletCharacter ℂ N}
 
-open Complex
+open Complex BigOperators
 
 open scoped LSeries.notation
 
@@ -15,6 +15,27 @@ section
 
 noncomputable
 abbrev LFunction_one (N : ℕ) [NeZero N] := (1 : DirichletCharacter ℂ N).LFunction
+
+#check riemannZeta_residue_one
+
+lemma LFunction_one_eq_mul_riemannZeta {s : ℂ} :
+    LFunction_one N s = (∏ p ∈ N.primeFactors, (1 - (p : ℂ) ^ (-s))) * riemannZeta s := by
+  sorry
+
+lemma LFunction_one_residue_one :
+  Filter.Tendsto (fun s ↦ (s - 1) * LFunction_one N s) (nhdsWithin 1 {1}ᶜ)
+    (nhds <| ∏ p ∈ N.primeFactors, (1 - (p : ℂ)⁻¹)) := by
+  conv => enter [1, s]; rw [LFunction_one_eq_mul_riemannZeta, mul_left_comm]
+  conv => enter [3, 1]; rw [← mul_one <| Finset.prod ..]; enter [1, 2, p]; rw [← cpow_neg_one]
+  convert Filter.Tendsto.mul (f := fun s ↦ ∏ p ∈ N.primeFactors, (1 - (p : ℂ) ^ (-s)))
+    ?_ riemannZeta_residue_one
+  apply tendsto_nhdsWithin_of_tendsto_nhds
+  refine Continuous.tendsto ?_ 1
+  refine continuous_finset_prod _ fun p hp ↦ ?_
+  refine Continuous.sub continuous_const ?_
+  refine Continuous.cpow continuous_const continuous_neg fun _ ↦ ?_
+  simp only [natCast_mem_slitPlane, ne_eq, (Nat.prime_of_mem_primeFactors hp).ne_zero,
+    not_false_eq_true]
 
 open Filter Topology Homeomorph Asymptotics
 
@@ -36,13 +57,13 @@ lemma norm_dirichletLFunction_product_ge_one {x : ℝ} (hx : 0 < x) (y : ℝ) :
 lemma dirichletLFunction_one_isBigO_near_one_horizontal :
     (fun x : ℝ ↦ LFunction_one N (1 + x)) =O[𝓝[>] 0] (fun x ↦ (1 : ℂ) / x) := by
   have : (fun w : ℂ ↦ LFunction_one N (1 + w)) =O[𝓝[≠] 0] (1 / ·) := by
-    have H : Tendsto (fun w ↦ w * LFunction_one N (1 + w)) (𝓝[≠] 0) (𝓝 1) := by
-      sorry
-      -- convert Tendsto.comp (f := fun w ↦ 1 + w) riemannZeta_residue_one ?_ using 1
-      -- · ext w
-      --   simp only [Function.comp_apply, add_sub_cancel_left]
-      -- · refine tendsto_iff_comap.mpr <| map_le_iff_le_comap.mp <| Eq.le ?_
-      --   convert map_punctured_nhds_eq (Homeomorph.addLeft (1 : ℂ)) 0 using 2 <;> simp
+    have H : Tendsto (fun w ↦ w * LFunction_one N (1 + w)) (𝓝[≠] 0)
+               (𝓝 <| ∏ p ∈ N.primeFactors, (1 - (p : ℂ)⁻¹)) := by
+      convert Tendsto.comp (f := fun w ↦ 1 + w) (LFunction_one_residue_one (N := N)) ?_ using 1
+      · ext w
+        simp only [Function.comp_apply, add_sub_cancel_left]
+      · refine tendsto_iff_comap.mpr <| map_le_iff_le_comap.mp <| Eq.le ?_
+        convert map_punctured_nhds_eq (Homeomorph.addLeft (1 : ℂ)) 0 using 2 <;> simp
     exact ((isBigO_mul_iff_isBigO_div eventually_mem_nhdsWithin).mp <|
       Tendsto.isBigO_one ℂ H).trans <| isBigO_refl ..
   exact (isBigO_comp_ofReal_nhds_ne this).mono <| nhds_right'_le_nhds_ne 0
