@@ -38,7 +38,7 @@ is entire.
   \leanok
   Let $\chi$ be a Dirichlet character modulo~$N$. Then for all $\varepsilon > 0$, we have
   \begin{equation} \label {eqn:product}
-    \|L(1, 1 + \eps)^3 L(\chi, 1 + \eps + it)^4 L(\chi^2, 1 + \eps + 2it)\| \ge 1 \,.
+    |L(1, 1 + \eps)^3 L(\chi, 1 + \eps + it)^4 L(\chi^2, 1 + \eps + 2it)| \ge 1 \,.
   \end{equation}
 \end{lemma}
 
@@ -62,54 +62,54 @@ is entire.
 \end{proof}
 
 
- So it suffices to prove that if $\chi$ is a quadratic character we have $L(\chi, 1) \ne 0$.
+So it suffices to prove that if $\chi$ is a quadratic character we have $L(\chi, 1) \ne 0$.
 
- \begin{definition}
+\begin{definition}
   \lean{BadChar}
   \leanok
   A \emph{bad character} is an $\R$-valued (hence quadratic) Dirichlet character such that $L(\chi, 1) = 0$.
- \end{definition}
+\end{definition}
 
- \begin{definition}
+\begin{definition}
   \lean{BadChar.F}
   \leanok
   Define $F : \mathbb{C} \to \mathbb{C}$ by
   \[ F(s) = \begin{cases}
-   \zeta(s) L(\chi, s) & \text{if $s \ne 1$} \\
-   L'(\chi, 1) & \text{if $s = 1$}
-   \end{cases}
+    \zeta(s) L(\chi, s) & \text{if $s \ne 1$} \\
+    L'(\chi, 1) & \text{if $s = 1$}
+    \end{cases}
   \]
- \end{definition}
+\end{definition}
 
- \begin{lemma}
+\begin{lemma}
   $F$ is an entire function.
- \end{lemma}
+\end{lemma}
 
- \begin{proof}
+\begin{proof}
   This is easy for $s \ne 1$ since we know analyticity of both factors. To prove analyticity at $s = 1$, it suffices to show continuity (Riemann criterion) and that should follow easily since we know that $\lim_{s \to 1} (s - 1) \zeta(s)$ exists.
- \end{proof}
+\end{proof}
 
- \begin{lemma}
+\begin{lemma}
   We have $F(-2) = 0$.
- \end{lemma}
+\end{lemma}
 
- \begin{proof}
+\begin{proof}
   Follows from the analyticity of $L(\chi, s)$ and the trivial zeroes of Riemann zeta.
- \end{proof}
+\end{proof}
 
- \begin{lemma}
+\begin{lemma}
   For $\Re(s) > 1$, $F(s)$ is equal to the Euler product
   \[ \mathcal{E}(s) \coloneqq \prod_p \left[ (1 - p^{-s}) (1 - \chi(p) p^{-s})\right]^{-1}. \]
- \end{lemma}
+\end{lemma}
 
- \begin{proof}
+\begin{proof}
   We have Euler products for both $L(\chi, s)$ and $\zeta(s)$.
- \end{proof}
+\end{proof}
 
- \begin{lemma}
+\begin{lemma}
   The weakly multiplicative function $e(n)$ whose Euler product is $\mathcal{E}$ takes non-negative real values.
- \end{lemma}
+\end{lemma}
 
- \begin{proof}
+\begin{proof}
   It suffices to show this for prime powers. We have $e(p^k) = (k + 1)$ if $\chi(p) = 1$, $e(p^k) = 1$ if $\chi(p) = 0$, and if $\chi(p) = -1$ then $e(p^k) = 1$ if $k$ even, $0$ if $k$ odd.
- \end{proof}
+\end{proof}
