@@ -102,13 +102,16 @@ So it suffices to prove that if $\chi$ is a quadratic character we have $L(\chi,
   This is easy for $s \ne 1$ since we know analyticity of both factors. To prove analyticity at $s = 1$, it suffices to show continuity (Riemann criterion) and that should follow easily since we know that $\lim_{s \to 1} (s - 1) \zeta(s)$ exists.
 \end{proof}
 
-\begin{lemma} \label{zero_of_F}
+\begin{lemma}
+
+  \label{zero_of_F}
+  \lean{BadChar.F_neg_two}
   \uses{def:bad_char_F}
   We have $F(-2) = 0$.
 \end{lemma}
 
 \begin{proof}
-  Follows from the analyticity of $L(\chi, s)$ and the trivial zeroes of Riemann zeta.
+  Follows from the trivial zeroes of Riemann zeta.
 \end{proof}
 
 \begin{lemma} \label{F_Euler_product}

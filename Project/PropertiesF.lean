@@ -4,14 +4,12 @@ import Mathlib.NumberTheory.LSeries.DirichletContinuation
 structure BadChar (N : ℕ) [NeZero N] where
   χ₀ : DirichletCharacter ℝ N
   χ : DirichletCharacter ℂ N := χ₀.ringHomComp Complex.ofRealHom
+  χ_ne : χ ≠ 1
   hχ : χ.LFunction 1 = 0
 
 variable {N : ℕ} [NeZero N]
 
 noncomputable section
-
-lemma BadChar.χ_ne (B : BadChar N) : B.χ ≠ 1 := by
-  sorry
 
 def BadChar.F (B : BadChar N) : ℂ → ℂ := Function.update
   (fun s : ℂ ↦ riemannZeta s * B.χ.LFunction s) 1 (deriv B.χ.LFunction 1)
@@ -58,6 +56,9 @@ lemma BadChar.F_differentiable (B : BadChar N) : Differentiable ℂ B.F := by
       rcases eq_or_ne a 1 with rfl | ha'
       · simp only [dist_self, hε]
       · simpa only [H, Function.update_noteq ha', Function.update_same] using ha ha'
+
+lemma BadChar.F_neg_two (B : BadChar N) : F (-2) = 0 := by
+  sorry
 
 /-- The goal: bad characters do not exist. -/
 theorem BadChar.elim (B : BadChar N) : False :=

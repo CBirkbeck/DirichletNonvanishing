@@ -36,3 +36,5 @@ docs/_includes/sorries.md
 *.synctex.gz
 *.synctex.gz(busy)
 *.pdfsync
+blueprint/src/content.pdf
+blueprint/lean_decls
