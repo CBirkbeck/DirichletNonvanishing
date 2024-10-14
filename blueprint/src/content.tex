@@ -78,6 +78,7 @@ So it suffices to prove that if $\chi$ is a quadratic character we have $L(\chi,
 \begin{definition} \label{def:bad_char_F}
   \lean{BadChar.F}
   \leanok
+  \uses{def:bad_char}
   Define $F \colon \mathbb{C} \to \mathbb{C}$ by
   \[ F(s) = \begin{cases}
     \zeta(s) L(\chi, s) & \text{if $s \ne 1$} \\
@@ -87,6 +88,7 @@ So it suffices to prove that if $\chi$ is a quadratic character we have $L(\chi,
 \end{definition}
 
 \begin{lemma} \label{F_entire}
+  \uses{def:bad_char_F}
   If $\chi$ is a bad character, then $F$ is an entire function.
 \end{lemma}
 
@@ -95,6 +97,7 @@ So it suffices to prove that if $\chi$ is a quadratic character we have $L(\chi,
 \end{proof}
 
 \begin{lemma} \label{zero_of_F}
+  \uses{def:bad_char_F}
   We have $F(-2) = 0$.
 \end{lemma}
 
@@ -103,8 +106,9 @@ So it suffices to prove that if $\chi$ is a quadratic character we have $L(\chi,
 \end{proof}
 
 \begin{lemma} \label{F_Euler_product}
+  \uses{def:bad_char_F}
   For $\Re(s) > 1$, $F(s)$ is equal to the Euler product
-  \[ \mathcal{E}(s) \coloneqq \prod_p \left[ (1 - p^{-s}) (1 - \chi(p) p^{-s})\right]^{-1}. \]
+  \[ \mathcal{E}(s) := \prod_p \left[ (1 - p^{-s}) (1 - \chi(p) p^{-s})\right]^{-1}. \]
 \end{lemma}
 
 \begin{proof}
@@ -116,6 +120,7 @@ So it suffices to prove that if $\chi$ is a quadratic character we have $L(\chi,
 \end{lemma}
 
 \begin{proof}
+  \uses{F_Euler_product}
   It suffices to show this for prime powers. We have $e(p^k) = (k + 1)$ if $\chi(p) = 1$, $e(p^k) = 1$ if $\chi(p) = 0$, and if $\chi(p) = -1$ then $e(p^k) = 1$ if $k$ even, $0$ if $k$ odd.
 \end{proof}
 
