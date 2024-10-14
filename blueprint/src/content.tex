@@ -88,6 +88,8 @@ So it suffices to prove that if $\chi$ is a quadratic character we have $L(\chi,
 \end{definition}
 
 \begin{lemma} \label{F_entire}
+  \lean{BadChar.F_differentiable}
+  \leanok
   \uses{def:bad_char_F}
   If $\chi$ is a bad character, then $F$ is an entire function.
 \end{lemma}
@@ -149,14 +151,14 @@ So it suffices to prove that if $\chi$ is a quadratic character we have $L(\chi,
   and the last sum has only nonnegative summands.
 \end{proof}
 
-\begin{theorem} \label{quadratic_char_nonvanishing}
-  If $\chi$ is a nontrivial Dirichlet character, then $L(\chi, 1) \ne 0$.
-\end{theorem}
+\begin{lemma} \label{quadratic_char_nonvanishing}
+  \lean{mainTheorem_quadratic}
+  \leanok
+  If $\chi$ is a nontrivial quadratic Dirichlet character, then $L(\chi, 1) \ne 0$.
+\end{lemma}
 
 \begin{proof}
-  \uses{non_quadratic, F_entire, zero_of_F, F_Euler_product, nonneg_coeffs, positivity_from_derivs, derivs_from_coeffs}
-  If $\chi$ is not a quadratic character, then the claim is Lemma~\ref{non_quadratic}.
-  So it suffices to consider quadratic characters~$\chi$.
+  \uses{F_entire, zero_of_F, F_Euler_product, nonneg_coeffs, positivity_from_derivs, derivs_from_coeffs}
   Assume that $L(\chi, 1) = 0$, so $\chi$ is a bad character. By Lemma~\ref{F_entire}, we then know
   that $F$ is an entire function. From Lemmas \ref{F_Euler_product} and~\ref{nonneg_coeffs} we see
   that $F$ agrees on $\Re s > 1$ with the $L$-series of an arithmetic function with nonnegative
@@ -165,4 +167,14 @@ So it suffices to prove that if $\chi$ is a quadratic character we have $L(\chi,
   (applied to $f(s) = F(2+s)$) implies that $F(x) > 0$ for all $x \le 2$. This now
   contradicts Lemma~\ref{zero_of_F}, which says that $F(-2) = 0$. So the initial assumption
   must be false, showing that $L(\chi, 1) \ne 0$.
+\end{proof}
+
+\begin{theorem} \label{dirichlet_char_nonvanishing}
+  If $\chi$ is a nontrivial Dirichlet character, then $L(\chi, 1) \ne 0$.
+\end{theorem}
+
+\begin{proof}
+  \uses{non_quadratic, quadratic_char_nonvanishing}
+  If $\chi$ is not a quadratic character, then the claim is Lemma~\ref{non_quadratic}.
+  If $\chi$ is a nontrivial quadratic characters, then the claim is Lemma~\ref{quadratic_char_nonvanishing}.
 \end{proof}
