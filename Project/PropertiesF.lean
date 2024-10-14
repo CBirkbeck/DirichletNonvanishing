@@ -59,8 +59,9 @@ lemma BadChar.F_differentiable (B : BadChar N) : Differentiable ℂ B.F := by
 
 lemma BadChar.F_neg_two (B : BadChar N) : B.F (-2) = 0 := by
   simp only [BadChar.F]
-  rw [Function.update_noteq (mod_cast (by omega : (-2 : ℤ) ≠ 1))]
-  sorry
+  have := riemannZeta_neg_two_mul_nat_add_one 0
+  rw [Nat.cast_zero, zero_add, mul_one] at this
+  rw [Function.update_noteq (mod_cast (by omega : (-2 : ℤ) ≠ 1)), this, zero_mul]
 
 
 /-- The goal: bad characters do not exist. -/

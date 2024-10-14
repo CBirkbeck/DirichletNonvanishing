@@ -103,15 +103,16 @@ So it suffices to prove that if $\chi$ is a quadratic character we have $L(\chi,
 \end{proof}
 
 \begin{lemma}
-
-  \label{zero_of_F}
-  \lean{BadChar.F_neg_two}
-  \uses{def:bad_char_F}
-  We have $F(-2) = 0$.
+ \label{zero_of_F}
+ \lean{BadChar.F_neg_two}
+ \leanok
+ We have $F(-2) = 0$.
 \end{lemma}
 
 \begin{proof}
-  Follows from the trivial zeroes of Riemann zeta.
+ \leanok
+ \uses{def:bad_char_F}
+ Follows from the trivial zeroes of Riemann zeta.
 \end{proof}
 
 \begin{lemma} \label{F_Euler_product}
