@@ -62,9 +62,17 @@ is entire.
 \end{proof}
 
 
- So it suffices to prove that if $\chi$ is a quadratic character we have $L(\chi, 1) \ne 0$. Suppose, for contradiction, that $\chi$ is such a character with $L(\chi, 1) = 0$. (XXX Does it help if we assume $\chi$ primitive mod $N$ as well?)
+ So it suffices to prove that if $\chi$ is a quadratic character we have $L(\chi, 1) \ne 0$.
 
  \begin{definition}
+  \lean{BadChar}
+  \leanok
+  A \emph{bad character} is an $\R$-valued (hence quadratic) Dirichlet character such that $L(\chi, 1) = 0$.
+ \end{definition}
+
+ \begin{definition}
+  \lean{BadChar.F}
+  \leanok
   Define $F : \mathbb{C} \to \mathbb{C}$ by
   \[ F(s) = \begin{cases}
    \zeta(s) L(\chi, s) & \text{if $s \ne 1$} \\
