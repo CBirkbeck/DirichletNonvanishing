@@ -6,15 +6,18 @@
 % the current file can be a simple sequence of \input. Otherwise It
 % can start with a \section or \chapter for instance.
 
+\setcounter{section}{0}
 
 \section{What this project is about}
 
 We're trying to prove the following theorem:
 
-\begin{theorem}
- \lean{ourMainTheorem}
+\begin{theorem*}
+%  \lean{ourMainTheorem}
  Let $N \ge 1$ and $\chi$ a complex-valued Dirichlet character mod $N$. Then $L(\chi, 1 + it) \ne 0$ for all real $t$.
-\end{theorem}
+\end{theorem*}
+
+See Theorem~\ref{dirichlet_char_nonvanishing} below.
 
 \section{High-level outline}:
 
@@ -33,7 +36,7 @@ is entire.
 \item By an analytic result from \texttt{EulerProducts}, this implies that $F(s)$ is real and non-vanishing for all real $s$.
 
 
-\item However, if $\chi$ is even then $F(0) = 0$, and if $\chi$ is odd then $F(-1) = 0$. This gives the desired contradiction.
+\item However, $F(-2) = 0$. This gives the desired contradiction.
 \end{itemize}
 
 \section{A more detailed plan}
@@ -170,11 +173,11 @@ So it suffices to prove that if $\chi$ is a quadratic character we have $L(\chi,
 \end{proof}
 
 \begin{theorem} \label{dirichlet_char_nonvanishing}
-  If $\chi$ is a nontrivial Dirichlet character, then $L(\chi, 1) \ne 0$.
+  If $\chi$ is a nontrivial Dirichlet character and $t$ is a real number, then $L(\chi, 1 + it) \ne 0$.
 \end{theorem}
 
 \begin{proof}
   \uses{non_quadratic, quadratic_char_nonvanishing}
-  If $\chi$ is not a quadratic character, then the claim is Lemma~\ref{non_quadratic}.
-  If $\chi$ is a nontrivial quadratic characters, then the claim is Lemma~\ref{quadratic_char_nonvanishing}.
+  If $\chi$ is not a quadratic character or $t \ne 0$, then the claim is Lemma~\ref{non_quadratic}.
+  If $\chi$ is a nontrivial quadratic characters and $t = 0$, then the claim is Lemma~\ref{quadratic_char_nonvanishing}.
 \end{proof}
