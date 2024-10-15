@@ -24,6 +24,9 @@ namespace DirichletCharacter
 noncomputable
 abbrev LFunction_one (N : ℕ) [NeZero N] := (1 : DirichletCharacter ℂ N).LFunction
 
+/-- If `χ` is a Dirichlet character and its level `M` divides `N`, then we obtain the L-series
+of `χ` considered as a Dirichlet character of level `N` from the L-series of `χ` by multiplying
+with `∏ p ∈ N.primeFactors, (1 - χ p * p ^ (-s))`. -/
 lemma LSeries_changeLevel {M N : ℕ} [NeZero N] (hMN : M ∣ N) (χ : DirichletCharacter ℂ M) {s : ℂ}
     (hs : 1 < s.re) :
     LSeries ↗(changeLevel hMN χ) s =
@@ -63,9 +66,10 @@ lemma LSeries_changeLevel {M N : ℕ} [NeZero N] (hMN : M ∣ N) (χ : Dirichlet
       have hb : ‖(p : ℂ) ^ (-s)‖ ≤ 1 / 2 := norm_prime_cpow_le_one_half ⟨p, h⟩ hs
       exact ((mul_le_mul ha hb (norm_nonneg _) zero_le_one).trans_lt (by norm_num)).ne
 
-lemma LFunction_changeLevel' {M N : ℕ} [NeZero M] [NeZero N] (hMN : M ∣ N)
-    (χ : DirichletCharacter ℂ M) {s : ℂ} (hs : s ≠ 1) : LFunction (changeLevel hMN χ) s =
-    LFunction χ s * ∏ p ∈ N.primeFactors, (1 - χ p * p ^ (-s)) := by
+lemma LFunction_changeLevel_aux {M N : ℕ} [NeZero M] [NeZero N] (hMN : M ∣ N)
+    (χ : DirichletCharacter ℂ M) {s : ℂ} (hs : s ≠ 1) :
+    LFunction (changeLevel hMN χ) s =
+      LFunction χ s * ∏ p ∈ N.primeFactors, (1 - χ p * p ^ (-s)) := by
   have hpc : IsPreconnected ({1}ᶜ : Set ℂ) := by
     refine (isConnected_compl_singleton_of_one_lt_rank ?_ _).isPreconnected
     simp only [rank_real_complex, Nat.one_lt_ofNat]
@@ -84,26 +88,26 @@ lemma LFunction_changeLevel' {M N : ℕ} [NeZero M] [NeZero N] (hMN : M ∣ N)
     · exact (continuous_re.isOpen_preimage _ isOpen_Ioi).mem_nhds (by norm_num : 1 < (2 : ℂ).re)
     · simpa only [LFunction_eq_LSeries _ ht] using LSeries_changeLevel hMN χ ht
 
+/-- If `χ` is a Dirichlet character and its level `M` divides `N`, then we obtain the L function
+of `χ` considered as a Dirichlet character of level `N` from the L function of `χ` by multiplying
+with `∏ p ∈ N.primeFactors, (1 - χ p * p ^ (-s))`. -/
 lemma LFunction_changeLevel {M N : ℕ} [NeZero M] [NeZero N] (hMN : M ∣ N)
     (χ : DirichletCharacter ℂ M) {s : ℂ} (h : χ ≠ 1 ∨ s ≠ 1) :
     (changeLevel hMN χ).LFunction s =
        χ.LFunction s * ∏ p ∈ N.primeFactors, (1 - χ p * p ^ (-s)) := by
   rcases h with h | h
-  · simp only [ne_eq, not_true_eq_false, or_false] at h
-    have hχ : changeLevel hMN χ ≠ 1 :=
-      fun H ↦ h <| (changeLevel_eq_one_iff hMN).mp H
-    have h₂ := (differentiable_LFunction (χ := changeLevel hMN χ) hχ).continuous
-    have h₃ :
+  · have hχ : changeLevel hMN χ ≠ 1 := fun H ↦ h <| (changeLevel_eq_one_iff hMN).mp H
+    have h' :
         Continuous fun s ↦ χ.LFunction s * ∏ p ∈ N.primeFactors, (1 - χ p * (p : ℂ) ^ (-s)) :=
       Continuous.mul (differentiable_LFunction h).continuous <|
         continuous_finset_prod _ fun p hp ↦ Continuous.sub continuous_const <|
         Continuous.mul continuous_const <|
           @continuous_cpow_natCast_neg p ⟨(Nat.prime_of_mem_primeFactors hp).ne_zero⟩
-    have H s (hs : s ≠ 1) := LFunction_changeLevel' hMN χ hs
+    have H s (hs : s ≠ 1) := LFunction_changeLevel_aux hMN χ hs
     revert s
     rw [← funext_iff]
-    exact Continuous.ext_on (dense_compl_singleton 1) h₂ h₃ H
-  · exact LFunction_changeLevel' hMN χ h
+    exact Continuous.ext_on (dense_compl_singleton 1) (differentiable_LFunction hχ).continuous h' H
+  · exact LFunction_changeLevel_aux hMN χ h
 
 lemma LFunction_one_eq_mul_riemannZeta {s : ℂ} (hs : s ≠ 1) :
     LFunction_one N s = (∏ p ∈ N.primeFactors, (1 - (p : ℂ) ^ (-s))) * riemannZeta s := by
