@@ -1,5 +1,6 @@
 import Mathlib.NumberTheory.LSeries.DirichletContinuation
 import Mathlib.NumberTheory.LSeries.Dirichlet
+import Project.EulerProducts.Auxiliary
 
 open Complex
 
@@ -151,29 +152,57 @@ lemma BadChar.e_nonneg (B : BadChar N) (n : ℕ) : 0 ≤ B.e n := by
   · simpa only [B.mult_e.multiplicative_factorization _ hn] using
       Finset.prod_nonneg fun p hp ↦ B.e_prime_pow (Nat.prime_of_mem_primeFactors hp) _
 
+lemma BadChar.e_one_eq_one (B : BadChar N) : B.e 1 = 1 := by
+  simp only [e, toArithmeticFunction, ArithmeticFunction.mul_apply, Nat.divisorsAntidiagonal_one,
+    Prod.mk_one_one, ArithmeticFunction.natCoe_apply, ArithmeticFunction.zeta_apply, Nat.cast_ite,
+    CharP.cast_eq_zero, Nat.cast_one, ArithmeticFunction.coe_mk, mul_ite, mul_zero, ite_mul,
+    zero_mul, one_mul, Finset.sum_singleton, Prod.snd_one, one_ne_zero, ↓reduceIte, Prod.fst_one,
+    map_one]
+
 open scoped ComplexOrder
 
-lemma derivs_from_coeffs (a : ArithmeticFunction ℂ) (h1 : 1 < a 1) (hn : ∀ n, 2 ≤ n → 0 ≤ a n)
-  (x : ℝ) (h : LSeriesSummable a x) (n : ℕ) :  0 ≤ (-1) ^ n * iteratedDeriv n (LSeries a) x := by
-  rw [LSeries_iteratedDeriv]
+lemma derivs_from_coeffs (a : ArithmeticFunction ℝ) (hn : ∀ n, 1 ≤ n → 0 ≤ a n)
+  (x : ℝ) (h : LSeries.abscissaOfAbsConv (a ·) < x) (n : ℕ) :
+    0 ≤ (-1) ^ n * iteratedDeriv n (LSeries (a ·)) x := by
+  rw [LSeries_iteratedDeriv _ h]
   · rw [LSeries]
     ring_nf
-    simp
+    simp only [even_two, Even.mul_left, Even.neg_pow, one_pow, mul_one]
     apply tsum_nonneg
     intro k
     rw [LSeries.term_def]
-    rcases eq_or_ne k 0 with rfl | hn
-    · simp
-    · split_ifs
-      · rfl
-      · apply mul_nonneg
-
-        sorry
-        sorry
-  · have := LSeriesSummable.abscissaOfAbsConv_le h
-    sorry
+    rcases eq_or_ne k 0 with rfl | hm
+    · simp only [↓reduceIte, le_refl]
+    · simp only [hm, ↓reduceIte]
+      apply mul_nonneg
+      · induction' n with n IH
+        · simp only [Function.iterate_zero, id_eq]
+          rcases eq_or_ne k 0 with rfl | hnm
+          · simp [ArithmeticFunction.map_zero, le_refl]
+          · simp
+            apply hn
+            omega
+        · rw [add_comm, Function.iterate_add_apply, Function.iterate_one]
+          apply mul_nonneg _ (IH)
+          simp only [← natCast_log, zero_le_real, Real.log_natCast_nonneg]
+      · simp only [le_def, zero_re, inv_re, zero_im, inv_im]
+        constructor
+        · apply div_nonneg _ (normSq_nonneg _)
+          simp only [cpow_def, Nat.cast_eq_zero, hm, ↓reduceIte, ← natCast_log, ← ofReal_mul,
+            exp_ofReal_re, Real.exp_nonneg]
+        · simp only [cpow_def, Nat.cast_eq_zero, hm, ↓reduceIte, ← natCast_log, ← ofReal_mul,
+          exp_ofReal_im, neg_zero, zero_div]
 
 
 /-- The goal: bad characters do not exist. -/
-theorem BadChar.elim (B : BadChar N) : False :=
+theorem BadChar.elim (B : BadChar N) : False := by
+  have h1 := B.e_nonneg
+  have h2 := B.F_neg_two
+  have h3 := B.F_differentiable
+  have h4 := B.F_eq_LSeries (s:=2) (hs:=by norm_num)
+  have h5 := derivs_from_coeffs B.e ?_ 2 ?_
+  have := Complex.at_zero_le_of_iteratedDeriv_alternating (f := LSeries (B.e ·))
+
+  sorry
+  sorry
   sorry
