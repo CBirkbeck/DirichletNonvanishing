@@ -39,6 +39,47 @@ lemma LFunction_one_residue_one :
 
 open Filter Topology Homeomorph Asymptotics
 
+lemma DirichletCharacter.LSeries_changeLevel (M N : ℕ) [NeZero N] (hMN : M ∣ N)
+    (χ : DirichletCharacter ℂ M) (s : ℂ) (hs : 1 < s.re) :
+    LSeries ↗(changeLevel hMN χ) s =
+      LSeries ↗χ s * ∏ p ∈ N.primeFactors, (1 - χ p * p ^ (-s)) := by
+  rw [prod_eq_tprod_mulIndicator, ← dirichletLSeries_eulerProduct_tprod _ hs,
+    ← dirichletLSeries_eulerProduct_tprod _ hs]
+  -- not sure why the `show` is needed here, `tprod_subtype` doesn't bite otherwise
+  show ∏' p : ↑{p : ℕ | p.Prime}, _ = (∏' p : ↑{p : ℕ | p.Prime}, _) * _
+  rw [tprod_subtype (s := ↑{p : ℕ | p.Prime})
+    (f := fun p ↦ (1 - (changeLevel hMN χ) p * p ^ (-s))⁻¹)]
+  rw [tprod_subtype (s := ↑{p : ℕ | p.Prime}) (f := fun p ↦ (1 - χ p * p ^ (-s))⁻¹), ← tprod_mul]
+  rotate_left -- deal with convergence goals first
+  · rw [← multipliable_subtype_iff_mulIndicator]
+    exact (dirichletLSeries_eulerProduct_hasProd χ hs).multipliable
+  · rw [← multipliable_subtype_iff_mulIndicator]
+    exact Multipliable.of_finite
+  · congr 1 with p
+    simp only [Set.mulIndicator_apply, Set.mem_setOf_eq, Finset.mem_coe, Nat.mem_primeFactors,
+      ne_eq, mul_ite, ite_mul, one_mul, mul_one]
+    by_cases h : p.Prime; swap
+    · simp only [h, false_and, if_false]
+    simp only [h, true_and, if_true]
+    by_cases hp' : p ∣ N; swap
+    · simp only [hp', false_and, ↓reduceIte, inv_inj, sub_right_inj, mul_eq_mul_right_iff,
+        cpow_eq_zero_iff, Nat.cast_eq_zero, ne_eq, neg_eq_zero]
+      have hq : IsUnit (p : ZMod N) := (ZMod.isUnit_prime_iff_not_dvd h).mpr hp'
+      have := DirichletCharacter.changeLevel_eq_cast_of_dvd χ hMN hq.unit
+      simp only [IsUnit.unit_spec] at this
+      simp only [this, ZMod.cast_natCast hMN, true_or]
+    · simp only [hp', NeZero.ne N, not_false_eq_true, and_self, ↓reduceIte]
+      have : ¬IsUnit (p : ZMod N) := by rwa [ZMod.isUnit_prime_iff_not_dvd h, not_not]
+      rw [MulChar.map_nonunit _ this, zero_mul, sub_zero, inv_one]
+      refine (inv_mul_cancel₀ ?_).symm
+      rw [sub_ne_zero, ne_comm]
+      -- Remains to show `χ p * p ^ (-s) ≠ 1`. We show its norm is strictly `< 1`.
+      apply_fun (‖·‖)
+      simp only [norm_mul, norm_one]
+      have ha : ‖χ p‖ ≤ 1 := χ.norm_le_one p
+      have hb : ‖(p : ℂ) ^ (-s)‖ ≤ 1 / 2 := norm_prime_cpow_le_one_half ⟨p, h⟩ hs
+      exact ((mul_le_mul ha hb (norm_nonneg _) zero_le_one).trans_lt (by norm_num)).ne
+
 /-- A variant of `norm_dirichlet_product_ge_one` in terms of the L functions. -/
 lemma norm_dirichletLFunction_product_ge_one {x : ℝ} (hx : 0 < x) (y : ℝ) :
     ‖LFunction_one N (1 + x) ^ 3 * χ.LFunction (1 + x + I * y) ^ 4 *
