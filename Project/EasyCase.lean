@@ -80,6 +80,27 @@ lemma DirichletCharacter.LSeries_changeLevel (M N : ℕ) [NeZero N] (hMN : M ∣
       have hb : ‖(p : ℂ) ^ (-s)‖ ≤ 1 / 2 := norm_prime_cpow_le_one_half ⟨p, h⟩ hs
       exact ((mul_le_mul ha hb (norm_nonneg _) zero_le_one).trans_lt (by norm_num)).ne
 
+lemma DirichletCharacter.LFunction_changeLevel (M N : ℕ) [NeZero M] [NeZero N] (hMN : M ∣ N)
+    (χ : DirichletCharacter ℂ M) {s : ℂ} (hs : s ≠ 1) : LFunction (changeLevel hMN χ) s =
+    LFunction χ s * ∏ p ∈ N.primeFactors, (1 - χ p * p ^ (-s)) := by
+  have hpc : IsPreconnected ({1}ᶜ : Set ℂ) := by
+    refine (isConnected_compl_singleton_of_one_lt_rank ?_ _).isPreconnected
+    simp only [rank_real_complex, Nat.one_lt_ofNat]
+  have hne : 2 ∈ ({1}ᶜ : Set ℂ) := by norm_num
+  refine AnalyticOnNhd.eqOn_of_preconnected_of_eventuallyEq (𝕜 := ℂ)
+    (g := fun s ↦ LFunction χ s * ∏ p ∈ N.primeFactors, (1 - χ p * p ^ (-s))) ?_ ?_ hpc hne ?_ hs
+  · refine DifferentiableOn.analyticOnNhd (fun s hs ↦ ?_) isOpen_compl_singleton
+    exact (differentiableAt_LFunction ((changeLevel hMN) χ) s (.inl hs)).differentiableWithinAt
+  · refine DifferentiableOn.analyticOnNhd (fun s hs ↦ ?_) isOpen_compl_singleton
+    refine ((differentiableAt_LFunction _ _ (.inl hs)).mul ?_).differentiableWithinAt
+    refine .finset_prod fun i hi ↦ ?_
+    refine (differentiableAt_const _).sub ((differentiableAt_const _).mul ?_)
+    apply differentiableAt_id.neg.const_cpow
+    exact .inl (mod_cast (Nat.pos_of_mem_primeFactors hi).ne')
+  · refine eventually_of_mem ?_  (fun t (ht : 1 < t.re) ↦ ?_)
+    · exact (continuous_re.isOpen_preimage _ isOpen_Ioi).mem_nhds (by norm_num : 1 < (2 : ℂ).re)
+    · simpa only [LFunction_eq_LSeries _ ht] using LSeries_changeLevel M N hMN χ t ht
+
 /-- A variant of `norm_dirichlet_product_ge_one` in terms of the L functions. -/
 lemma norm_dirichletLFunction_product_ge_one {x : ℝ} (hx : 0 < x) (y : ℝ) :
     ‖LFunction_one N (1 + x) ^ 3 * χ.LFunction (1 + x + I * y) ^ 4 *
