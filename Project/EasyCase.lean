@@ -13,33 +13,14 @@ open scoped LSeries.notation
 
 section
 
+open Filter Topology Homeomorph Asymptotics
+
+namespace DirichletCharacter
+
 noncomputable
 abbrev LFunction_one (N : ℕ) [NeZero N] := (1 : DirichletCharacter ℂ N).LFunction
 
-#check riemannZeta_residue_one
-
-lemma LFunction_one_eq_mul_riemannZeta {s : ℂ} :
-    LFunction_one N s = (∏ p ∈ N.primeFactors, (1 - (p : ℂ) ^ (-s))) * riemannZeta s := by
-  sorry
-
-lemma LFunction_one_residue_one :
-  Filter.Tendsto (fun s ↦ (s - 1) * LFunction_one N s) (nhdsWithin 1 {1}ᶜ)
-    (nhds <| ∏ p ∈ N.primeFactors, (1 - (p : ℂ)⁻¹)) := by
-  conv => enter [1, s]; rw [LFunction_one_eq_mul_riemannZeta, mul_left_comm]
-  conv => enter [3, 1]; rw [← mul_one <| Finset.prod ..]; enter [1, 2, p]; rw [← cpow_neg_one]
-  convert Filter.Tendsto.mul (f := fun s ↦ ∏ p ∈ N.primeFactors, (1 - (p : ℂ) ^ (-s)))
-    ?_ riemannZeta_residue_one
-  apply tendsto_nhdsWithin_of_tendsto_nhds
-  refine Continuous.tendsto ?_ 1
-  refine continuous_finset_prod _ fun p hp ↦ ?_
-  refine Continuous.sub continuous_const ?_
-  refine Continuous.cpow continuous_const continuous_neg fun _ ↦ ?_
-  simp only [natCast_mem_slitPlane, ne_eq, (Nat.prime_of_mem_primeFactors hp).ne_zero,
-    not_false_eq_true]
-
-open Filter Topology Homeomorph Asymptotics
-
-lemma DirichletCharacter.LSeries_changeLevel (M N : ℕ) [NeZero N] (hMN : M ∣ N)
+lemma LSeries_changeLevel (M N : ℕ) [NeZero N] (hMN : M ∣ N)
     (χ : DirichletCharacter ℂ M) (s : ℂ) (hs : 1 < s.re) :
     LSeries ↗(changeLevel hMN χ) s =
       LSeries ↗χ s * ∏ p ∈ N.primeFactors, (1 - χ p * p ^ (-s)) := by
@@ -100,6 +81,46 @@ lemma DirichletCharacter.LFunction_changeLevel (M N : ℕ) [NeZero M] [NeZero N]
   · refine eventually_of_mem ?_  (fun t (ht : 1 < t.re) ↦ ?_)
     · exact (continuous_re.isOpen_preimage _ isOpen_Ioi).mem_nhds (by norm_num : 1 < (2 : ℂ).re)
     · simpa only [LFunction_eq_LSeries _ ht] using LSeries_changeLevel M N hMN χ t ht
+
+lemma LFunction_changeLevel (M N : ℕ) [NeZero M] [NeZero N] (hMN : M ∣ N)
+    (χ : DirichletCharacter ℂ M) {s : ℂ} (h : χ ≠ 1 ∨ s ≠ 1) :
+    (changeLevel hMN χ).LFunction s =
+       χ.LFunction s * ∏ p ∈ N.primeFactors, (1 - χ p * p ^ (-s)) := by
+
+  sorry
+
+
+lemma LFunction_one_eq_mul_riemannZeta {s : ℂ} (hs : s ≠ 1) :
+    LFunction_one N s = (∏ p ∈ N.primeFactors, (1 - (p : ℂ) ^ (-s))) * riemannZeta s := by
+  rw [← LFunction_modOne_eq (χ := 1), LFunction_one, ← changeLevel_one N.one_dvd, mul_comm]
+  convert LFunction_changeLevel 1 N N.one_dvd 1 (.inr hs) using 4 with p
+  rw [MulChar.one_apply <| isUnit_of_subsingleton _, one_mul]
+
+#check Filter.tendsto_congr'
+
+lemma LFunction_one_residue_one :
+  Filter.Tendsto (fun s ↦ (s - 1) * LFunction_one N s) (nhdsWithin 1 {1}ᶜ)
+    (nhds <| ∏ p ∈ N.primeFactors, (1 - (p : ℂ)⁻¹)) := by
+  -- need to use that `s ≠ 1`
+  have H : (fun s ↦ (s - 1) * LFunction_one N s) =ᶠ[nhdsWithin 1 {1}ᶜ]
+        fun s ↦ (∏ p ∈ N.primeFactors, (1 - (p : ℂ) ^ (-s))) * ((s - 1) * riemannZeta s) := by
+
+    sorry
+  rw [tendsto_congr' H]
+  conv => enter [3, 1]; rw [← mul_one <| Finset.prod ..]; enter [1, 2, p]; rw [← cpow_neg_one]
+  convert Filter.Tendsto.mul (f := fun s ↦ ∏ p ∈ N.primeFactors, (1 - (p : ℂ) ^ (-s)))
+    ?_ riemannZeta_residue_one
+  apply tendsto_nhdsWithin_of_tendsto_nhds
+  refine Continuous.tendsto ?_ 1
+  refine continuous_finset_prod _ fun p hp ↦ ?_
+  refine Continuous.sub continuous_const ?_
+  refine Continuous.cpow continuous_const continuous_neg fun _ ↦ ?_
+  simp only [natCast_mem_slitPlane, ne_eq, (Nat.prime_of_mem_primeFactors hp).ne_zero,
+    not_false_eq_true]
+
+end DirichletCharacter
+
+open DirichletCharacter
 
 /-- A variant of `norm_dirichlet_product_ge_one` in terms of the L functions. -/
 lemma norm_dirichletLFunction_product_ge_one {x : ℝ} (hx : 0 < x) (y : ℝ) :
