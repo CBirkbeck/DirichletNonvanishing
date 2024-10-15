@@ -116,10 +116,9 @@ lemma LFunction_one_eq_mul_riemannZeta {s : ℂ} (hs : s ≠ 1) :
 /-- The L function of the trivial Dirichlet character mod `N` has a simple pole with
 residue `∏ p ∈ N.primeFactors, (1 - p⁻¹)` at `s = 1`. -/
 lemma LFunction_one_residue_one :
-  Filter.Tendsto (fun s ↦ (s - 1) * LFunction_one N s) (nhdsWithin 1 {1}ᶜ)
-    (nhds <| ∏ p ∈ N.primeFactors, (1 - (p : ℂ)⁻¹)) := by
-  -- need to use that `s ≠ 1`
-  have H : (fun s ↦ (s - 1) * LFunction_one N s) =ᶠ[nhdsWithin 1 {1}ᶜ]
+  Filter.Tendsto (fun s ↦ (s - 1) * LFunction_one N s) (𝓝[≠] 1)
+    (𝓝 <| ∏ p ∈ N.primeFactors, (1 - (p : ℂ)⁻¹)) := by
+  have H : (fun s ↦ (s - 1) * LFunction_one N s) =ᶠ[𝓝[≠] 1]
         fun s ↦ (∏ p ∈ N.primeFactors, (1 - (p : ℂ) ^ (-s))) * ((s - 1) * riemannZeta s) := by
     refine Set.EqOn.eventuallyEq_nhdsWithin fun s hs ↦ ?_
     rw [mul_left_comm, LFunction_one_eq_mul_riemannZeta hs]
@@ -152,7 +151,7 @@ lemma LFunction_one_isBigO_near_one_horizontal :
     have H : Tendsto (fun w ↦ w * LFunction_one N (1 + w)) (𝓝[≠] 0)
                (𝓝 <| ∏ p ∈ N.primeFactors, (1 - (p : ℂ)⁻¹)) := by
       convert Tendsto.comp (f := fun w ↦ 1 + w) (LFunction_one_residue_one (N := N)) ?_ using 1
-      · ext w
+      · ext1
         simp only [Function.comp_apply, add_sub_cancel_left]
       · refine tendsto_iff_comap.mpr <| map_le_iff_le_comap.mp <| Eq.le ?_
         convert map_punctured_nhds_eq (Homeomorph.addLeft (1 : ℂ)) 0 using 2 <;> simp
@@ -163,7 +162,7 @@ lemma LFunction_one_isBigO_near_one_horizontal :
 lemma LFunction_isBigO_of_ne_one_horizontal {y : ℝ} (hy : y ≠ 0 ∨ χ ≠ 1) :
     (fun x : ℝ ↦ χ.LFunction (1 + x + I * y)) =O[𝓝[>] 0] (fun _ ↦ (1 : ℂ)) := by
   refine Asymptotics.IsBigO.mono ?_ nhdsWithin_le_nhds
-  have hy' : 1 + I * y ≠ 1 ∨ χ ≠ 1:= by
+  have hy' : 1 + I * y ≠ 1 ∨ χ ≠ 1 := by
     simp only [ne_eq, add_right_eq_self, mul_eq_zero, I_ne_zero, ofReal_eq_zero, false_or, hy]
   convert isBigO_comp_ofReal
     (χ.differentiableAt_LFunction _ hy').continuousAt.isBigO using 3 with x
@@ -174,8 +173,7 @@ lemma LFunction_isBigO_near_root_horizontal {y : ℝ} (hy : y ≠ 0 ∨ χ ≠ 1
     (fun x : ℝ ↦ χ.LFunction (1 + x + I * y)) =O[𝓝[>] 0] fun x : ℝ ↦ (x : ℂ) := by
   have hy' : 1 + I * y ≠ 1 ∨ χ ≠ 1:= by simp [hy]
   conv => enter [2, x]; rw [add_comm 1, add_assoc]
-  refine (isBigO_comp_ofReal <| DifferentiableAt.isBigO_of_eq_zero ?_ h).mono
-    nhdsWithin_le_nhds
+  refine (isBigO_comp_ofReal <| DifferentiableAt.isBigO_of_eq_zero ?_ h).mono nhdsWithin_le_nhds
   exact χ.differentiableAt_LFunction (1 + I * ↑y) hy'
 
 end DirichletCharacter
@@ -183,8 +181,7 @@ end DirichletCharacter
 open DirichletCharacter in
 /-- The L function of a Dirichlet character `χ` does not vanish at `1 + I*t` if `t ≠ 0`
 or `χ^2 ≠ 1`. -/
-theorem mainTheorem_general {t : ℝ} (h : χ ^ 2 ≠ 1 ∨ t ≠ 0) :
-    χ.LFunction (1 + I * t) ≠ 0 := by
+theorem mainTheorem_general {t : ℝ} (h : χ ^ 2 ≠ 1 ∨ t ≠ 0) : χ.LFunction (1 + I * t) ≠ 0 := by
   intro Hz
   have H₀ : (fun _ : ℝ ↦ (1 : ℝ)) =O[𝓝[>] 0]
       (fun x ↦ LFunction_one N (1 + x) ^ 3 * χ.LFunction (1 + x + I * t) ^ 4 *
@@ -192,21 +189,15 @@ theorem mainTheorem_general {t : ℝ} (h : χ ^ 2 ≠ 1 ∨ t ≠ 0) :
     IsBigO.of_bound' <| eventually_nhdsWithin_of_forall
       fun _ hx ↦ (norm_one (α := ℝ)).symm ▸ (norm_LFunction_product_ge_one hx t).le
   have hz₁ : t ≠ 0 ∨ χ ≠ 1 := by
-    rcases h with h | h
-    · refine .inr ?_
-      rintro rfl
-      simp only [one_pow, ne_eq, not_true_eq_false] at h
-    · exact .inl h
-  have hz₂ : 2 * t ≠ 0 ∨ χ ^ 2 ≠ 1 := by
-    rcases h with h | h
-    · exact .inr h
-    · exact .inl <| mul_ne_zero two_ne_zero h
+    refine h.casesOn (fun h ↦ .inr fun H ↦ ?_) .inl
+    simp only [H, one_pow, ne_eq, not_true_eq_false] at h
+  have hz₂ : 2 * t ≠ 0 ∨ χ ^ 2 ≠ 1 := h.casesOn .inr fun h ↦ .inl (mul_ne_zero two_ne_zero h)
   have H := ((LFunction_one_isBigO_near_one_horizontal (N := N)).pow 3).mul
     ((LFunction_isBigO_near_root_horizontal hz₁ Hz).pow 4)|>.mul <|
     LFunction_isBigO_of_ne_one_horizontal hz₂
   have help (x : ℝ) : ((1 / x) ^ 3 * x ^ 4 * 1 : ℂ) = x := by
     rcases eq_or_ne x 0 with rfl | h
-    · rw [ofReal_zero, zero_pow (by norm_num), mul_zero, mul_one]
+    · rw [ofReal_zero, zero_pow (by omega), mul_zero, mul_one]
     · field_simp [h]
       ring
   conv at H => enter [3, x]; rw [help]
