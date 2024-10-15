@@ -85,8 +85,7 @@ lemma BadChar.F_eq_LSeries (B : BadChar N) {s : ℂ} (hs : 1 < s.re) :
   have (n : ℕ) : (B.e n : ℂ) = LSeries.convolution (fun _ ↦ 1) (B.χ ·) n := by
     simp only [e, ArithmeticFunction.mul_apply, ArithmeticFunction.natCoe_apply,
       ArithmeticFunction.zeta_apply, Nat.cast_ite, Nat.cast_zero, Nat.cast_one, ite_mul, zero_mul,
-      one_mul, ofReal_sum, χ₀_def, MulChar.ringHomComp_apply, ofRealHom_eq_coe,
-      LSeries.convolution_def]
+      one_mul, LSeries.convolution_def]
     refine Finset.sum_congr rfl fun i hi ↦ ?_
     simp only [(Nat.ne_zero_of_mem_divisorsAntidiagonal hi).1, ↓reduceIte, toArithmeticFunction,
       ArithmeticFunction.coe_mk, (Nat.ne_zero_of_mem_divisorsAntidiagonal hi).2]
@@ -147,8 +146,7 @@ lemma BadChar.e_summable {s : ℂ} (hs : 1 < s.re) (B : BadChar N) : LSeriesSumm
   have h₂ := DirichletCharacter.LSeriesSummable_of_one_lt_re B.χ hs
   have h₂' : LSeriesSummable (toArithmeticFunction (↗B.χ)) s := by
     refine (LSeriesSummable_congr s fun {n} hn ↦ ?_).mp h₂
-    simp only [χ₀_def, MulChar.ringHomComp_apply, ofRealHom_eq_coe, toArithmeticFunction, coe_mk,
-      hn, ↓reduceIte]
+    simp only [toArithmeticFunction, coe_mk, hn, ↓reduceIte]
   exact ArithmeticFunction.LSeriesSummable_mul h₁ h₂'
 
 open scoped ComplexOrder
