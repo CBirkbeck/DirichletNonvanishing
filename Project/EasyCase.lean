@@ -5,6 +5,12 @@ import Mathlib.NumberTheory.LSeries.DirichletContinuation
 # Lemma 2: non-vanishing for `t ≠ 0` or `χ² ≠ 1`
 -/
 
+open Complex in
+lemma continuous_cpow_natCast_neg (n : ℕ) [NeZero n] : Continuous fun s : ℂ ↦ (n : ℂ) ^ (-s) := by
+  refine Continuous.cpow continuous_const continuous_neg fun _ ↦ ?_
+  simp only [natCast_mem_slitPlane, ne_eq, (Nat.prime_of_mem_primeFactors hp).ne_zero,
+    not_false_eq_true, NeZero.ne]
+
 variable {N : ℕ} [NeZero N] {χ : DirichletCharacter ℂ N}
 
 open Complex BigOperators
@@ -61,7 +67,7 @@ lemma LSeries_changeLevel (M N : ℕ) [NeZero N] (hMN : M ∣ N)
       have hb : ‖(p : ℂ) ^ (-s)‖ ≤ 1 / 2 := norm_prime_cpow_le_one_half ⟨p, h⟩ hs
       exact ((mul_le_mul ha hb (norm_nonneg _) zero_le_one).trans_lt (by norm_num)).ne
 
-lemma DirichletCharacter.LFunction_changeLevel (M N : ℕ) [NeZero M] [NeZero N] (hMN : M ∣ N)
+lemma LFunction_changeLevel' {M N : ℕ} [NeZero M] [NeZero N] (hMN : M ∣ N)
     (χ : DirichletCharacter ℂ M) {s : ℂ} (hs : s ≠ 1) : LFunction (changeLevel hMN χ) s =
     LFunction χ s * ∏ p ∈ N.primeFactors, (1 - χ p * p ^ (-s)) := by
   have hpc : IsPreconnected ({1}ᶜ : Set ℂ) := by
@@ -82,21 +88,32 @@ lemma DirichletCharacter.LFunction_changeLevel (M N : ℕ) [NeZero M] [NeZero N]
     · exact (continuous_re.isOpen_preimage _ isOpen_Ioi).mem_nhds (by norm_num : 1 < (2 : ℂ).re)
     · simpa only [LFunction_eq_LSeries _ ht] using LSeries_changeLevel M N hMN χ t ht
 
-lemma LFunction_changeLevel (M N : ℕ) [NeZero M] [NeZero N] (hMN : M ∣ N)
+lemma LFunction_changeLevel {M N : ℕ} [NeZero M] [NeZero N] (hMN : M ∣ N)
     (χ : DirichletCharacter ℂ M) {s : ℂ} (h : χ ≠ 1 ∨ s ≠ 1) :
     (changeLevel hMN χ).LFunction s =
        χ.LFunction s * ∏ p ∈ N.primeFactors, (1 - χ p * p ^ (-s)) := by
-
-  sorry
-
+  rcases h with h | h
+  · simp only [ne_eq, not_true_eq_false, or_false] at h
+    have hχ : changeLevel hMN χ ≠ 1 :=
+      fun H ↦ h <| (changeLevel_eq_one_iff hMN).mp H
+    have h₂ := (differentiable_LFunction (χ := changeLevel hMN χ) hχ).continuous
+    have h₃ :
+        Continuous fun s ↦ χ.LFunction s * ∏ p ∈ N.primeFactors, (1 - χ p * (p : ℂ) ^ (-s)) :=
+      Continuous.mul (differentiable_LFunction h).continuous <|
+        continuous_finset_prod _ fun p hp ↦ Continuous.sub continuous_const <|
+        Continuous.mul continuous_const <|
+          @continuous_cpow_natCast_neg p ⟨(Nat.prime_of_mem_primeFactors hp).ne_zero⟩
+    have H s (hs : s ≠ 1) := LFunction_changeLevel' hMN χ hs
+    revert s
+    rw [← funext_iff]
+    exact Continuous.ext_on (dense_compl_singleton 1) h₂ h₃ H
+  · exact LFunction_changeLevel' hMN χ h
 
 lemma LFunction_one_eq_mul_riemannZeta {s : ℂ} (hs : s ≠ 1) :
     LFunction_one N s = (∏ p ∈ N.primeFactors, (1 - (p : ℂ) ^ (-s))) * riemannZeta s := by
   rw [← LFunction_modOne_eq (χ := 1), LFunction_one, ← changeLevel_one N.one_dvd, mul_comm]
-  convert LFunction_changeLevel 1 N N.one_dvd 1 (.inr hs) using 4 with p
+  convert LFunction_changeLevel N.one_dvd 1 (.inr hs) using 4 with p
   rw [MulChar.one_apply <| isUnit_of_subsingleton _, one_mul]
-
-#check Filter.tendsto_congr'
 
 lemma LFunction_one_residue_one :
   Filter.Tendsto (fun s ↦ (s - 1) * LFunction_one N s) (nhdsWithin 1 {1}ᶜ)
@@ -104,19 +121,16 @@ lemma LFunction_one_residue_one :
   -- need to use that `s ≠ 1`
   have H : (fun s ↦ (s - 1) * LFunction_one N s) =ᶠ[nhdsWithin 1 {1}ᶜ]
         fun s ↦ (∏ p ∈ N.primeFactors, (1 - (p : ℂ) ^ (-s))) * ((s - 1) * riemannZeta s) := by
-
-    sorry
+    refine Set.EqOn.eventuallyEq_nhdsWithin fun s hs ↦ ?_
+    rw [mul_left_comm, LFunction_one_eq_mul_riemannZeta hs]
   rw [tendsto_congr' H]
   conv => enter [3, 1]; rw [← mul_one <| Finset.prod ..]; enter [1, 2, p]; rw [← cpow_neg_one]
   convert Filter.Tendsto.mul (f := fun s ↦ ∏ p ∈ N.primeFactors, (1 - (p : ℂ) ^ (-s)))
     ?_ riemannZeta_residue_one
   apply tendsto_nhdsWithin_of_tendsto_nhds
   refine Continuous.tendsto ?_ 1
-  refine continuous_finset_prod _ fun p hp ↦ ?_
-  refine Continuous.sub continuous_const ?_
-  refine Continuous.cpow continuous_const continuous_neg fun _ ↦ ?_
-  simp only [natCast_mem_slitPlane, ne_eq, (Nat.prime_of_mem_primeFactors hp).ne_zero,
-    not_false_eq_true]
+  exact continuous_finset_prod _ fun p hp ↦ Continuous.sub continuous_const <|
+    @continuous_cpow_natCast_neg p ⟨(Nat.prime_of_mem_primeFactors hp).ne_zero⟩
 
 end DirichletCharacter
 
