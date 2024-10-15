@@ -159,7 +159,18 @@ lemma BadChar.e_one_eq_one (B : BadChar N) : B.e 1 = 1 := by
     zero_mul, one_mul, Finset.sum_singleton, Prod.snd_one, one_ne_zero, ↓reduceIte, Prod.fst_one,
     map_one]
 
+open ArithmeticFunction in
+open scoped LSeries.notation in
 lemma BadChar.e_summable {s : ℂ} (hs : 1 < s.re) (B : BadChar N) : LSeriesSummable (B.e ·) s := by
+  simp only [BadChar.e]
+  have h₁ := LSeriesSummable_zeta_iff.mpr hs
+  have h₂ := DirichletCharacter.LSeriesSummable_of_one_lt_re B.χ hs
+  have h₂' : LSeriesSummable (toArithmeticFunction (↗B.χ₀)) s := by
+    refine (LSeriesSummable_congr s fun {n} hn ↦ ?_).mp h₂
+    simp only [χ₀_def, MulChar.ringHomComp_apply, ofRealHom_eq_coe, toArithmeticFunction, coe_mk,
+      hn, ↓reduceIte]
+  convert ArithmeticFunction.LSeriesSummable_mul ?_ h₂'
+
   sorry
 
 end
