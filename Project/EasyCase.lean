@@ -11,13 +11,9 @@ lemma continuous_cpow_natCast_neg (n : ℕ) [NeZero n] : Continuous fun s : ℂ 
 
 variable {N : ℕ} [NeZero N] {χ : DirichletCharacter ℂ N}
 
-open Complex BigOperators
+open Complex BigOperators Filter Topology Homeomorph Asymptotics
 
 open scoped LSeries.notation
-
-section
-
-open Filter Topology Homeomorph Asymptotics
 
 namespace DirichletCharacter
 
@@ -135,12 +131,8 @@ lemma LFunction_one_residue_one :
   exact continuous_finset_prod _ fun p hp ↦ Continuous.sub continuous_const <|
     @continuous_cpow_natCast_neg p ⟨(Nat.prime_of_mem_primeFactors hp).ne_zero⟩
 
-end DirichletCharacter
-
-open DirichletCharacter
-
 /-- A variant of `norm_dirichlet_product_ge_one` in terms of the L functions. -/
-lemma norm_dirichletLFunction_product_ge_one {x : ℝ} (hx : 0 < x) (y : ℝ) :
+lemma norm_LFunction_product_ge_one {x : ℝ} (hx : 0 < x) (y : ℝ) :
     ‖LFunction_one N (1 + x) ^ 3 * χ.LFunction (1 + x + I * y) ^ 4 *
       (χ ^ 2).LFunction (1 + x + 2 * I * y)‖ ≥ 1 := by
   convert norm_dirichlet_product_ge_one χ hx y using 3
@@ -154,7 +146,7 @@ lemma norm_dirichletLFunction_product_ge_one {x : ℝ} (hx : 0 < x) (y : ℝ) :
     simp only [add_re, one_re, ofReal_re, mul_re, re_ofNat, I_re, mul_zero, im_ofNat, I_im, mul_one,
       sub_self, zero_mul, mul_im, add_zero, ofReal_im, lt_add_iff_pos_right, hx]
 
-lemma dirichletLFunction_one_isBigO_near_one_horizontal :
+lemma LFunction_one_isBigO_near_one_horizontal :
     (fun x : ℝ ↦ LFunction_one N (1 + x)) =O[𝓝[>] 0] (fun x ↦ (1 : ℂ) / x) := by
   have : (fun w : ℂ ↦ LFunction_one N (1 + w)) =O[𝓝[≠] 0] (1 / ·) := by
     have H : Tendsto (fun w ↦ w * LFunction_one N (1 + w)) (𝓝[≠] 0)
@@ -168,7 +160,7 @@ lemma dirichletLFunction_one_isBigO_near_one_horizontal :
       Tendsto.isBigO_one ℂ H).trans <| isBigO_refl ..
   exact (isBigO_comp_ofReal_nhds_ne this).mono <| nhds_right'_le_nhds_ne 0
 
-lemma dirichletLFunction_isBigO_of_ne_one_horizontal {y : ℝ} (hy : y ≠ 0 ∨ χ ≠ 1) :
+lemma LFunction_isBigO_of_ne_one_horizontal {y : ℝ} (hy : y ≠ 0 ∨ χ ≠ 1) :
     (fun x : ℝ ↦ χ.LFunction (1 + x + I * y)) =O[𝓝[>] 0] (fun _ ↦ (1 : ℂ)) := by
   refine Asymptotics.IsBigO.mono ?_ nhdsWithin_le_nhds
   have hy' : 1 + I * y ≠ 1 ∨ χ ≠ 1:= by
@@ -177,7 +169,7 @@ lemma dirichletLFunction_isBigO_of_ne_one_horizontal {y : ℝ} (hy : y ≠ 0 ∨
     (χ.differentiableAt_LFunction _ hy').continuousAt.isBigO using 3 with x
   ring
 
-lemma dirichletLFunction_isBigO_near_root_horizontal {y : ℝ} (hy : y ≠ 0 ∨ χ ≠ 1)
+lemma LFunction_isBigO_near_root_horizontal {y : ℝ} (hy : y ≠ 0 ∨ χ ≠ 1)
     (h : χ.LFunction (1 + I * y) = 0) :
     (fun x : ℝ ↦ χ.LFunction (1 + x + I * y)) =O[𝓝[>] 0] fun x : ℝ ↦ (x : ℂ) := by
   have hy' : 1 + I * y ≠ 1 ∨ χ ≠ 1:= by simp [hy]
@@ -186,6 +178,9 @@ lemma dirichletLFunction_isBigO_near_root_horizontal {y : ℝ} (hy : y ≠ 0 ∨
     nhdsWithin_le_nhds
   exact χ.differentiableAt_LFunction (1 + I * ↑y) hy'
 
+end DirichletCharacter
+
+open DirichletCharacter in
 /-- The L function of a Dirichlet character `χ` does not vanish at `1 + I*t` if `t ≠ 0`
 or `χ^2 ≠ 1`. -/
 theorem mainTheorem_general {t : ℝ} (h : χ ^ 2 ≠ 1 ∨ t ≠ 0) :
@@ -195,7 +190,7 @@ theorem mainTheorem_general {t : ℝ} (h : χ ^ 2 ≠ 1 ∨ t ≠ 0) :
       (fun x ↦ LFunction_one N (1 + x) ^ 3 * χ.LFunction (1 + x + I * t) ^ 4 *
                    (χ ^ 2).LFunction (1 + x + 2 * I * t)) :=
     IsBigO.of_bound' <| eventually_nhdsWithin_of_forall
-      fun _ hx ↦ (norm_one (α := ℝ)).symm ▸ (norm_dirichletLFunction_product_ge_one hx t).le
+      fun _ hx ↦ (norm_one (α := ℝ)).symm ▸ (norm_LFunction_product_ge_one hx t).le
   have hz₁ : t ≠ 0 ∨ χ ≠ 1 := by
     rcases h with h | h
     · refine .inr ?_
@@ -206,9 +201,9 @@ theorem mainTheorem_general {t : ℝ} (h : χ ^ 2 ≠ 1 ∨ t ≠ 0) :
     rcases h with h | h
     · exact .inr h
     · exact .inl <| mul_ne_zero two_ne_zero h
-  have H := ((dirichletLFunction_one_isBigO_near_one_horizontal (N := N)).pow 3).mul
-    ((dirichletLFunction_isBigO_near_root_horizontal hz₁ Hz).pow 4)|>.mul <|
-    dirichletLFunction_isBigO_of_ne_one_horizontal hz₂
+  have H := ((LFunction_one_isBigO_near_one_horizontal (N := N)).pow 3).mul
+    ((LFunction_isBigO_near_root_horizontal hz₁ Hz).pow 4)|>.mul <|
+    LFunction_isBigO_of_ne_one_horizontal hz₂
   have help (x : ℝ) : ((1 / x) ^ 3 * x ^ 4 * 1 : ℂ) = x := by
     rcases eq_or_ne x 0 with rfl | h
     · rw [ofReal_zero, zero_pow (by norm_num), mul_zero, mul_one]
@@ -223,5 +218,3 @@ theorem mainTheorem_general {t : ℝ} (h : χ ^ 2 ≠ 1 ∨ t ≠ 0) :
     isLittleO_id_one.mono nhdsWithin_le_nhds
   simp only [ne_eq, one_ne_zero, not_false_eq_true, frequently_true_iff_neBot]
   exact mem_closure_iff_nhdsWithin_neBot.mp <| closure_Ioi (0 : ℝ) ▸ Set.left_mem_Ici
-
-end
