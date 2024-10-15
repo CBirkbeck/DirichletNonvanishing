@@ -159,6 +159,11 @@ lemma BadChar.e_one_eq_one (B : BadChar N) : B.e 1 = 1 := by
     zero_mul, one_mul, Finset.sum_singleton, Prod.snd_one, one_ne_zero, ↓reduceIte, Prod.fst_one,
     map_one]
 
+lemma BadChar.e_summable {s : ℂ} (hs : 1 < s.re) (B : BadChar N) : LSeriesSummable (B.e ·) s := by
+  sorry
+
+end
+
 open scoped ComplexOrder
 
 lemma derivs_from_coeffs (a : ArithmeticFunction ℝ) (hn : ∀ n, 1 ≤ n → 0 ≤ a n)
@@ -193,16 +198,105 @@ lemma derivs_from_coeffs (a : ArithmeticFunction ℝ) (hn : ∀ n, 1 ≤ n → 0
         · simp only [cpow_def, Nat.cast_eq_zero, hm, ↓reduceIte, ← natCast_log, ← ofReal_mul,
           exp_ofReal_im, neg_zero, zero_div]
 
+lemma BadChar.F_two_pos (B : BadChar N)  : 0 < (B.F 2) := by
+  rw [ B.F_eq_LSeries (s:=2) (hs:=by norm_num)]
+  rw [LSeries]
+  apply tsum_pos (i := 1)
+  rw [LSeries.term_def]
+  simp
+  rw [BadChar.e_one_eq_one]
+  exact Real.zero_lt_one
+  rw [← LSeriesSummable]
+  apply BadChar.e_summable (by norm_num)
+  · intro i
+    rw [LSeries.term_def]
+    simp
+    rcases eq_or_ne i 0 with rfl | hi
+    · simp only [↓reduceIte, le_refl]
+    · simp only [hi, ↓reduceIte]
+      apply mul_nonneg
+      · simp only [zero_le_real]
+        apply B.e_nonneg
+      · simp only [le_def, zero_re, inv_re, zero_im, inv_im]
+        constructor
+        · apply div_nonneg _ (normSq_nonneg _)
+          norm_cast
+          exact sq_nonneg i
+        · norm_cast
+          simp
+
+
+
+
+
+lemma iteratedDeriv_comp_const_add (n : ℕ) (f : ℂ → ℂ) (s : ℂ) :
+  iteratedDeriv n f s = iteratedDeriv n (fun z ↦ f (s + z)) 0 := by
+  induction' n with n IH generalizing f
+  · simp
+  · simp_rw [iteratedDeriv_succ']
+    have := IH (deriv f)
+    rw [this]
+    simp_rw [← iteratedDerivWithin_univ ]
+    apply iteratedDerivWithin_congr
+    exact uniqueDiffOn_univ
+    intro x _
+    simp
+    rw [deriv_comp_const_add]
+    simp
+
+lemma iteratedDeriv_eq_on_open (n : ℕ) (f g : ℂ → ℂ) (s : Set ℂ) (hs : IsOpen s) (x : s)
+    (hfg : Set.EqOn f g s) :
+    iteratedDeriv n f x = iteratedDeriv n g x := by
+  induction' n with n IH generalizing f g
+  simp
+  apply hfg
+  exact x.2
+  simp_rw [iteratedDeriv_succ']
+  apply IH
+  intro y hy
+  apply Filter.EventuallyEq.deriv_eq
+  rw [@Filter.eventuallyEq_iff_exists_mem]
+  use s
+  constructor
+  exact IsOpen.mem_nhds hs hy
+  apply hfg
+
+theorem BadChar.abscissa {N : ℕ} [inst : NeZero N] (B : BadChar N) :
+  (LSeries.abscissaOfAbsConv fun x ↦ ↑(B.e x)) < ↑2 := sorry
 
 /-- The goal: bad characters do not exist. -/
 theorem BadChar.elim (B : BadChar N) : False := by
   have h1 := B.e_nonneg
   have h2 := B.F_neg_two
   have h3 := B.F_differentiable
-  have h4 := B.F_eq_LSeries (s:=2) (hs:=by norm_num)
   have h5 := derivs_from_coeffs B.e ?_ 2 ?_
-  have := Complex.at_zero_le_of_iteratedDeriv_alternating (f := LSeries (B.e ·))
-
-  sorry
-  sorry
-  sorry
+  · have := Complex.at_zero_le_of_iteratedDeriv_alternating (f := fun s ↦ B.F (s + 2)) (z := -4) ?_ ?_
+    · simp at this
+      have h6 := BadChar.F_two_pos B
+      have : 0 < B.F (-2) := by
+        apply lt_of_lt_of_le h6
+        norm_cast at *
+      linarith
+    · apply Differentiable.comp
+      apply h3
+      simp only [differentiable_id', differentiable_const, Differentiable.add]
+    · intro n _
+      have h55 := h5 n
+      rw [iteratedDeriv_comp_const_add] at h55
+      have := iteratedDeriv_eq_on_open n (fun s ↦ B.F (s + 2))
+        (fun z ↦ LSeries (fun x ↦ ↑(B.e x)) (↑2 + z)) {s | 1 < (s + 2).re} ?_ ?_
+          (x := ⟨(0 : ℂ), by simp⟩)
+      rw [this]
+      apply h55
+      · apply isOpen_lt
+        exact continuous_const
+        refine Continuous.comp' ?refine_3.refine_2.refine_1.hg.hg ?refine_3.refine_2.refine_1.hg.hf
+        apply Complex.continuous_re
+        exact continuous_add_right 2
+      · intro x hx
+        simp only
+        rw [B.F_eq_LSeries (s := x + 2), add_comm]
+        apply hx
+  · intro n _
+    apply h1
+  · apply BadChar.abscissa B
