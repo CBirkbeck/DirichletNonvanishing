@@ -97,7 +97,7 @@ lemma BadChar.F_neg_two (B : BadChar N) : B.F (-2) = 0 := by
   rw [Function.update_noteq (mod_cast (by omega : (-2 : ℤ) ≠ 1)), this, zero_mul]
 
 /-- The real-valued arithmetic function whose L-series is `B.F`. -/
-def BadChar.e (B : BadChar N) : ArithmeticFunction ℝ := .zeta * (toArithmeticFunction (B.χ₀ ·))
+def BadChar.e (B : BadChar N) : ArithmeticFunction ℂ := .zeta * toArithmeticFunction (B.χ ·)
 
 lemma BadChar.F_eq_LSeries (B : BadChar N) {s : ℂ} (hs : 1 < s.re) :
     B.F s = LSeries (B.e ·) s := by
@@ -128,18 +128,17 @@ lemma BadChar.mult_e (B : BadChar N) : B.e.IsMultiplicative := by
     simp only [toArithmeticFunction, ArithmeticFunction.coe_mk, mul_eq_zero, hm, hn, false_or,
       if_false, Nat.cast_mul, map_mul]
 
+-- We use the ordering on `ℂ` given by comparing real parts for fixed imaginary part
+open ComplexOrder
+
 lemma BadChar.e_prime_pow (B : BadChar N) {p : ℕ} (hp : p.Prime) (k : ℕ) :
     0 ≤ B.e (p ^ k) := by
   simp only [e, toArithmeticFunction, ArithmeticFunction.coe_zeta_mul_apply,
     ArithmeticFunction.coe_mk, Nat.sum_divisors_prime_pow hp, pow_eq_zero_iff', hp.ne_zero, ne_eq,
     false_and, ↓reduceIte, Nat.cast_pow, map_pow]
-  have := B.χ_apply_eq p
-  simp only [B.χ₀_def, MulChar.ringHomComp_apply, ofRealHom_eq_coe, ofReal_eq_zero,
-    ← neg_eq_iff_eq_neg (b := (1 : ℂ)), ← ofReal_neg, neg_eq_iff_eq_neg (b := (1 : ℝ)),
-    ofReal_eq_one] at this
-  rcases this with h | h | h
+  rcases B.χ_apply_eq p with h | h | h
   · refine Finset.sum_nonneg fun i _ ↦ ?_
-    simp only [h, le_refl, pow_nonneg]
+    simp [h, le_refl, pow_nonneg]
   · refine Finset.sum_nonneg fun i _ ↦ ?_
     simp only [h, one_pow, zero_le_one]
   · simp only [h, neg_one_geom_sum]
@@ -165,17 +164,15 @@ lemma BadChar.e_summable {s : ℂ} (hs : 1 < s.re) (B : BadChar N) : LSeriesSumm
   simp only [BadChar.e]
   have h₁ := LSeriesSummable_zeta_iff.mpr hs
   have h₂ := DirichletCharacter.LSeriesSummable_of_one_lt_re B.χ hs
-  have h₂' : LSeriesSummable (toArithmeticFunction (↗B.χ₀)) s := by
+  have h₂' : LSeriesSummable (toArithmeticFunction (↗B.χ)) s := by
     refine (LSeriesSummable_congr s fun {n} hn ↦ ?_).mp h₂
     simp only [χ₀_def, MulChar.ringHomComp_apply, ofRealHom_eq_coe, toArithmeticFunction, coe_mk,
       hn, ↓reduceIte]
-  convert ArithmeticFunction.LSeriesSummable_mul ?_ h₂'
-
-  sorry
+  exact ArithmeticFunction.LSeriesSummable_mul h₁ h₂'
 
 open scoped ComplexOrder
 
-lemma derivs_from_coeffs (a : ArithmeticFunction ℝ) (hn : ∀ n, 0 ≤ a n) (x : ℝ)
+lemma derivs_from_coeffs (a : ArithmeticFunction ℂ) (hn : ∀ n, 0 ≤ a n) (x : ℝ)
     (h : LSeries.abscissaOfAbsConv (a ·) < x) (n : ℕ) :
     0 ≤ (-1) ^ n * iteratedDeriv n (LSeries (a ·)) x := by
   rw [LSeries_iteratedDeriv _ h]
@@ -191,8 +188,7 @@ lemma derivs_from_coeffs (a : ArithmeticFunction ℝ) (hn : ∀ n, 0 ≤ a n) (x
       apply mul_nonneg
       · induction' n with n IH
         · simp only [Function.iterate_zero, id_eq]
-          · simp only [zero_le_real]
-            apply hn
+          · exact hn k
         · rw [add_comm, Function.iterate_add_apply, Function.iterate_one]
           apply mul_nonneg _ (IH)
           simp only [← natCast_log, zero_le_real, Real.log_natCast_nonneg]
@@ -205,7 +201,7 @@ lemma derivs_from_coeffs (a : ArithmeticFunction ℝ) (hn : ∀ n, 0 ≤ a n) (x
           exp_ofReal_im, neg_zero, zero_div]
 
 lemma BadChar.F_two_pos (B : BadChar N) : 0 < (B.F 2) := by
-  rw [ B.F_eq_LSeries (s:= 2) (hs:= by norm_num), LSeries]
+  rw [B.F_eq_LSeries (s := 2) (hs:= by norm_num), LSeries]
   apply tsum_pos (i := 1)
   · rw [LSeries.term_def]
     simp only [one_ne_zero, ↓reduceIte, e_one_eq_one, ofReal_one, Nat.cast_one, cpow_ofNat, one_pow,
@@ -219,8 +215,7 @@ lemma BadChar.F_two_pos (B : BadChar N) : 0 < (B.F 2) := by
     · simp only [↓reduceIte, le_refl]
     · simp only [hi, ↓reduceIte]
       apply mul_nonneg
-      · simp only [zero_le_real]
-        apply B.e_nonneg
+      · exact B.e_nonneg i
       · simp only [le_def, zero_re, inv_re, zero_im, inv_im]
         constructor
         · apply div_nonneg _ (normSq_nonneg _)
@@ -253,8 +248,17 @@ lemma iteratedDeriv_eq_on_open (n : ℕ) {f g : ℂ → ℂ} {s : Set ℂ} (hs :
     rw [@Filter.eventuallyEq_iff_exists_mem]
     refine ⟨s, IsOpen.mem_nhds hs hy, hfg⟩
 
+open scoped LSeries.notation in
 theorem BadChar.abscissa {N : ℕ} [inst : NeZero N] (B : BadChar N) :
-    (LSeries.abscissaOfAbsConv fun x ↦ ↑(B.e x)) < ↑2 := sorry
+    LSeries.abscissaOfAbsConv ↗B.e < 2 := by
+  have H : LSeries.abscissaOfAbsConv ↗B.e ≤ (3 / 2 : ℝ) := by
+    convert LSeriesSummable.abscissaOfAbsConv_le (s := (3 / 2 : ℝ)) ?_
+    exact B.e_summable (s := (3 / 2 : ℝ))
+            (by simp only [ofReal_div, ofReal_ofNat, div_ofNat_re, re_ofNat]; norm_num)
+  refine H.trans_lt ?_
+  rw [show (2 : EReal) = (2 : ℝ) from rfl]
+  norm_cast
+  norm_num
 
 /-- The goal: bad characters do not exist. -/
 theorem BadChar.elim (B : BadChar N) : False := by
