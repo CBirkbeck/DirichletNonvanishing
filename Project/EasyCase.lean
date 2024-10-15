@@ -24,17 +24,16 @@ namespace DirichletCharacter
 noncomputable
 abbrev LFunction_one (N : ℕ) [NeZero N] := (1 : DirichletCharacter ℂ N).LFunction
 
-lemma LSeries_changeLevel (M N : ℕ) [NeZero N] (hMN : M ∣ N)
-    (χ : DirichletCharacter ℂ M) (s : ℂ) (hs : 1 < s.re) :
+lemma LSeries_changeLevel {M N : ℕ} [NeZero N] (hMN : M ∣ N) (χ : DirichletCharacter ℂ M) {s : ℂ}
+    (hs : 1 < s.re) :
     LSeries ↗(changeLevel hMN χ) s =
       LSeries ↗χ s * ∏ p ∈ N.primeFactors, (1 - χ p * p ^ (-s)) := by
   rw [prod_eq_tprod_mulIndicator, ← dirichletLSeries_eulerProduct_tprod _ hs,
     ← dirichletLSeries_eulerProduct_tprod _ hs]
   -- not sure why the `show` is needed here, `tprod_subtype` doesn't bite otherwise
   show ∏' p : ↑{p : ℕ | p.Prime}, _ = (∏' p : ↑{p : ℕ | p.Prime}, _) * _
-  rw [tprod_subtype (s := ↑{p : ℕ | p.Prime})
-    (f := fun p ↦ (1 - (changeLevel hMN χ) p * p ^ (-s))⁻¹)]
-  rw [tprod_subtype (s := ↑{p : ℕ | p.Prime}) (f := fun p ↦ (1 - χ p * p ^ (-s))⁻¹), ← tprod_mul]
+  rw [tprod_subtype ↑{p : ℕ | p.Prime} fun p ↦ (1 - (changeLevel hMN χ) p * p ^ (-s))⁻¹,
+    tprod_subtype ↑{p : ℕ | p.Prime} fun p ↦ (1 - χ p * p ^ (-s))⁻¹, ← tprod_mul]
   rotate_left -- deal with convergence goals first
   · rw [← multipliable_subtype_iff_mulIndicator]
     exact (dirichletLSeries_eulerProduct_hasProd χ hs).multipliable
@@ -48,11 +47,10 @@ lemma LSeries_changeLevel (M N : ℕ) [NeZero N] (hMN : M ∣ N)
     simp only [h, true_and, if_true]
     by_cases hp' : p ∣ N; swap
     · simp only [hp', false_and, ↓reduceIte, inv_inj, sub_right_inj, mul_eq_mul_right_iff,
-        cpow_eq_zero_iff, Nat.cast_eq_zero, ne_eq, neg_eq_zero]
+        cpow_eq_zero_iff, Nat.cast_eq_zero, h.ne_zero, ne_eq, neg_eq_zero, or_false]
       have hq : IsUnit (p : ZMod N) := (ZMod.isUnit_prime_iff_not_dvd h).mpr hp'
-      have := DirichletCharacter.changeLevel_eq_cast_of_dvd χ hMN hq.unit
-      simp only [IsUnit.unit_spec] at this
-      simp only [this, ZMod.cast_natCast hMN, true_or]
+      have := hq.unit_spec ▸ DirichletCharacter.changeLevel_eq_cast_of_dvd χ hMN hq.unit
+      simp only [this, ZMod.cast_natCast hMN]
     · simp only [hp', NeZero.ne N, not_false_eq_true, and_self, ↓reduceIte]
       have : ¬IsUnit (p : ZMod N) := by rwa [ZMod.isUnit_prime_iff_not_dvd h, not_not]
       rw [MulChar.map_nonunit _ this, zero_mul, sub_zero, inv_one]
@@ -84,7 +82,7 @@ lemma LFunction_changeLevel' {M N : ℕ} [NeZero M] [NeZero N] (hMN : M ∣ N)
     exact .inl (mod_cast (Nat.pos_of_mem_primeFactors hi).ne')
   · refine eventually_of_mem ?_  (fun t (ht : 1 < t.re) ↦ ?_)
     · exact (continuous_re.isOpen_preimage _ isOpen_Ioi).mem_nhds (by norm_num : 1 < (2 : ℂ).re)
-    · simpa only [LFunction_eq_LSeries _ ht] using LSeries_changeLevel M N hMN χ t ht
+    · simpa only [LFunction_eq_LSeries _ ht] using LSeries_changeLevel hMN χ ht
 
 lemma LFunction_changeLevel {M N : ℕ} [NeZero M] [NeZero N] (hMN : M ∣ N)
     (χ : DirichletCharacter ℂ M) {s : ℂ} (h : χ ≠ 1 ∨ s ≠ 1) :
