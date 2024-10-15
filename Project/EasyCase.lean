@@ -8,8 +8,7 @@ import Mathlib.NumberTheory.LSeries.DirichletContinuation
 open Complex in
 lemma continuous_cpow_natCast_neg (n : ℕ) [NeZero n] : Continuous fun s : ℂ ↦ (n : ℂ) ^ (-s) := by
   refine Continuous.cpow continuous_const continuous_neg fun _ ↦ ?_
-  simp only [natCast_mem_slitPlane, ne_eq, (Nat.prime_of_mem_primeFactors hp).ne_zero,
-    not_false_eq_true, NeZero.ne]
+  simp only [natCast_mem_slitPlane, ne_eq, NeZero.ne, not_false_eq_true]
 
 variable {N : ℕ} [NeZero N] {χ : DirichletCharacter ℂ N}
 
