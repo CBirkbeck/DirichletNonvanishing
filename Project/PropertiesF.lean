@@ -24,25 +24,6 @@ lemma BadChar.χ_apply_eq (B : BadChar N) (x : ZMod N) :
     tauto
   · simp only [B.χ.map_nonunit hx, true_or]
 
-/-- The real-valued character whose coercion to `ℂ` is `B.χ`. -/
-def BadChar.χ₀ (B : BadChar N) : DirichletCharacter ℝ N :=
-  { toFun := fun x ↦ (B.χ x).re,
-    map_one' := by simp only [map_one, one_re],
-    map_mul' := by
-      intro x y
-      rcases B.χ_apply_eq x with hx | hx | hx <;>
-      rcases B.χ_apply_eq y with hy | hy | hy <;>
-      simp only [hx, hy, map_mul, mul_neg, mul_one, neg_zero, zero_re, neg_re, one_re, mul_zero]
-    map_nonunit' := by
-      intro u hu
-      simp only [B.χ.map_nonunit hu, zero_re] }
-
-lemma BadChar.χ₀_def (B : BadChar N) : B.χ = B.χ₀.ringHomComp ofRealHom := by
-  ext a
-  rcases B.χ_apply_eq a with ha | ha | ha <;>
-  simp only [ha, MulChar.ringHomComp_apply, MulChar.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk,
-    zero_re, neg_re, one_re, ofRealHom_eq_coe, ofReal_zero, ofReal_one, ofReal_neg, BadChar.χ₀]
-
 /-- The auxiliary function `s ↦ ζ s * L B.χ s`. -/
 def BadChar.F (B : BadChar N) : ℂ → ℂ := Function.update
   (fun s : ℂ ↦ riemannZeta s * B.χ.LFunction s) 1 (deriv B.χ.LFunction 1)
