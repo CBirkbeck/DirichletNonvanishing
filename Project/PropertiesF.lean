@@ -145,33 +145,22 @@ lemma BadChar.e_summable (B : BadChar N) {s : ℂ} (hs : 1 < s.re) : LSeriesSumm
 real number in the domain of absolute convergence, then the `n`th iterated derivative
 of the associated L-series is nonnegative real when `n` is even and nonpositive real
 when `n` is odd. -/
-lemma derivs_from_coeffs (a : ArithmeticFunction ℂ) (hn : ∀ n, 0 ≤ a n) (x : ℝ)
-    (h : LSeries.abscissaOfAbsConv (a ·) < x) (n : ℕ) :
+lemma ArithmeticFunction.iteratedDeriv_LSeries_alternating (a : ArithmeticFunction ℂ)
+    (hn : ∀ n, 0 ≤ a n) {x : ℝ} (h : LSeries.abscissaOfAbsConv (a ·) < x) (n : ℕ) :
     0 ≤ (-1) ^ n * iteratedDeriv n (LSeries (a ·)) x := by
-  rw [LSeries_iteratedDeriv _ h]
-  · rw [LSeries]
-    ring_nf
-    simp only [even_two, Even.mul_left, Even.neg_pow, one_pow, mul_one]
-    apply tsum_nonneg
-    intro k
-    rw [LSeries.term_def]
-    rcases eq_or_ne k 0 with rfl | hm
-    · simp only [↓reduceIte, le_refl]
-    · simp only [hm, ↓reduceIte]
-      apply mul_nonneg
-      · induction' n with n IH
-        · simp only [Function.iterate_zero, id_eq]
-          · exact hn k
-        · rw [add_comm, Function.iterate_add_apply, Function.iterate_one]
-          apply mul_nonneg _ (IH)
-          simp only [← natCast_log, zero_le_real, Real.log_natCast_nonneg]
-      · simp only [le_def, zero_re, inv_re, zero_im, inv_im]
-        constructor
-        · apply div_nonneg _ (normSq_nonneg _)
-          simp only [cpow_def, Nat.cast_eq_zero, hm, ↓reduceIte, ← natCast_log, ← ofReal_mul,
-            exp_ofReal_re, Real.exp_nonneg]
-        · simp only [cpow_def, Nat.cast_eq_zero, hm, ↓reduceIte, ← natCast_log, ← ofReal_mul,
-          exp_ofReal_im, neg_zero, zero_div]
+  rw [LSeries_iteratedDeriv _ h, LSeries, ← mul_assoc, ← pow_add, Even.neg_one_pow ⟨n, rfl⟩,
+    one_mul]
+  refine tsum_nonneg fun k ↦ ?_
+  rw [LSeries.term_def]
+  split
+  · exact le_rfl
+  · refine mul_nonneg ?_ <| inv_natCast_pow_ofReal_nonneg (by assumption) x
+    induction n with
+    | zero => simp only [Function.iterate_zero, id_eq]; exact hn k
+    | succ n IH =>
+        rw [Function.iterate_succ_apply']
+        refine mul_nonneg ?_ IH
+        simp only [← natCast_log, zero_le_real, Real.log_natCast_nonneg]
 
 lemma BadChar.F_two_pos (B : BadChar N) : 0 < B.F 2 := by
   rw [B.F_eq_LSeries (by norm_num), LSeries]
@@ -196,7 +185,7 @@ theorem BadChar.abscissa {N : ℕ} [NeZero N] (B : BadChar N) :
 theorem BadChar.elim (B : BadChar N) : False := by
   have h n (_ : n ≠ 0) :  0 ≤ (-1) ^ n * iteratedDeriv n B.F 2 := by
     have hs : IsOpen {s : ℂ | 1 < s.re} := by refine isOpen_lt ?_ ?_ <;> fun_prop
-    convert derivs_from_coeffs B.e B.e_nonneg 2 B.abscissa n using 2
+    convert B.e.iteratedDeriv_LSeries_alternating B.e_nonneg B.abscissa n using 2
     convert iteratedDeriv_eq_on_open n hs ⟨(2 : ℂ), ?_⟩ fun _ ↦ B.F_eq_LSeries
     simp only [Set.mem_setOf_eq, re_ofNat, Nat.one_lt_ofNat]
   exact (B.F_two_pos.trans_le <|

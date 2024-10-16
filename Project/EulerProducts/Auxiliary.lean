@@ -19,6 +19,13 @@ lemma summable_im {α : Type _} {f : α → ℂ} (h : Summable f) : Summable fun
 
 -- #find_home summable_re -- [Mathlib.Analysis.Complex.Basic]
 
+open scoped ComplexOrder
+
+lemma inv_natCast_pow_ofReal_nonneg {n : ℕ} (hn : n ≠ 0) (x : ℝ) : 0 ≤ ((n : ℂ) ^ (x : ℂ))⁻¹ := by
+  rw [show (n : ℂ) ^ (x : ℂ) = (n : ℝ) ^ (x : ℂ) from rfl, ← ofReal_cpow n.cast_nonneg',
+    ← ofReal_inv, zero_le_real]
+  exact inv_nonneg_of_nonneg (by positivity)
+
 end Complex
 
 
