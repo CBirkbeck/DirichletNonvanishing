@@ -80,54 +80,50 @@ lemma BadChar.F_neg_two (B : BadChar N) : B.F (-2) = 0 := by
   rw [Nat.cast_zero, zero_add, mul_one] at this
   rw [Function.update_noteq (mod_cast (by omega : (-2 : ℤ) ≠ 1)), this, zero_mul]
 
+open ArithmeticFunction
+
 /-- The complex-valued arithmetic function whose L-series is `B.F`. -/
 def BadChar.e (B : BadChar N) : ArithmeticFunction ℂ := .zeta * toArithmeticFunction (B.χ ·)
 
-lemma BadChar.F_eq_LSeries (B : BadChar N) {s : ℂ} (hs : 1 < s.re) :
-    B.F s = LSeries (B.e ·) s := by
-  have (n : ℕ) : B.e n = LSeries.convolution (fun _ ↦ 1) (B.χ ·) n := by
-    simp only [e, ArithmeticFunction.mul_apply, ArithmeticFunction.natCoe_apply,
-      ArithmeticFunction.zeta_apply, Nat.cast_ite, Nat.cast_zero, Nat.cast_one, ite_mul, zero_mul,
-      one_mul, LSeries.convolution_def]
+/-- `B.F` agrees with the L-series of `B.e` on `1 < s.re`. -/
+lemma BadChar.F_eq_LSeries (B : BadChar N) {s : ℂ} (hs : 1 < s.re) : B.F s = LSeries B.e s := by
+  have (n : ℕ) : B.e n = LSeries.convolution (fun _ ↦ (1 : ℂ)) (B.χ ·) n := by
+    simp only [e, mul_apply, natCoe_apply, zeta_apply, Nat.cast_ite, Nat.cast_zero, Nat.cast_one,
+      ite_mul, zero_mul, one_mul, LSeries.convolution_def]
     refine Finset.sum_congr rfl fun i hi ↦ ?_
     simp only [(Nat.ne_zero_of_mem_divisorsAntidiagonal hi).1, ↓reduceIte, toArithmeticFunction,
-      ArithmeticFunction.coe_mk, (Nat.ne_zero_of_mem_divisorsAntidiagonal hi).2]
+      coe_mk, (Nat.ne_zero_of_mem_divisorsAntidiagonal hi).2]
+  rw [show (↑B.e : ℕ → ℂ) = fun n : ℕ ↦ B.e n from rfl]
   simp only [this]
-  rw [LSeries_convolution', BadChar.F, Function.update_noteq]
-  · congr 1
-    · exact (LSeriesHasSum_one hs).LSeries_eq.symm
-    · exact DirichletCharacter.LFunction_eq_LSeries _ hs
-  · intro h
-    simp only [h, one_re, lt_self_iff_false] at hs
-  · rwa [← Pi.one_def, LSeriesSummable_one_iff]
-  · exact ZMod.LSeriesSummable_of_one_lt_re _ hs
+  have h₁ : LSeriesSummable (fun _ ↦ (1 : ℂ)) s := by rwa [← Pi.one_def, LSeriesSummable_one_iff]
+  have h₂ : LSeriesSummable (B.χ ·) s := ZMod.LSeriesSummable_of_one_lt_re _ hs
+  have hs' : s ≠ 1 := fun h ↦ by simp only [h, one_re, lt_self_iff_false] at hs
+  rw [LSeries_convolution' h₁ h₂, BadChar.F, Function.update_noteq hs',← Pi.one_def,
+    (LSeriesHasSum_one hs).LSeries_eq, DirichletCharacter.LFunction_eq_LSeries _ hs]
 
 lemma BadChar.mult_e (B : BadChar N) : B.e.IsMultiplicative := by
-  apply ArithmeticFunction.isMultiplicative_zeta.natCast.mul
-  refine ArithmeticFunction.IsMultiplicative.iff_ne_zero.mpr ⟨?_, ?_⟩
-  · simp only [toArithmeticFunction, ArithmeticFunction.coe_mk, one_ne_zero, ↓reduceIte,
-      Nat.cast_one, map_one]
+  refine isMultiplicative_zeta.natCast.mul <| IsMultiplicative.iff_ne_zero.mpr ⟨?_, ?_⟩
+  · simp only [toArithmeticFunction, coe_mk, one_ne_zero, ↓reduceIte, Nat.cast_one, map_one]
   · intro m n hm hn _
-    simp only [toArithmeticFunction, ArithmeticFunction.coe_mk, mul_eq_zero, hm, hn, false_or,
-      if_false, Nat.cast_mul, map_mul]
+    simp only [toArithmeticFunction, coe_mk, mul_eq_zero, hm, hn, false_or, Nat.cast_mul, map_mul,
+      if_false]
 
 -- We use the ordering on `ℂ` given by comparing real parts for fixed imaginary part
 open scoped ComplexOrder
 
-lemma BadChar.e_prime_pow (B : BadChar N) {p : ℕ} (hp : p.Prime) (k : ℕ) :
-    0 ≤ B.e (p ^ k) := by
-  simp only [e, toArithmeticFunction, ArithmeticFunction.coe_zeta_mul_apply,
-    ArithmeticFunction.coe_mk, Nat.sum_divisors_prime_pow hp, pow_eq_zero_iff', hp.ne_zero, ne_eq,
-    false_and, ↓reduceIte, Nat.cast_pow, map_pow]
+lemma BadChar.e_prime_pow (B : BadChar N) {p : ℕ} (hp : p.Prime) (k : ℕ) : 0 ≤ B.e (p ^ k) := by
+  simp only [e, toArithmeticFunction, coe_zeta_mul_apply, coe_mk, Nat.sum_divisors_prime_pow hp,
+    pow_eq_zero_iff', hp.ne_zero, ne_eq, false_and, ↓reduceIte, Nat.cast_pow, map_pow]
   rcases B.χ_apply_eq p with h | h | h
   · refine Finset.sum_nonneg fun i _ ↦ ?_
-    simp [h, le_refl, pow_nonneg]
+    simp only [h, le_refl, pow_nonneg]
   · refine Finset.sum_nonneg fun i _ ↦ ?_
     simp only [h, one_pow, zero_le_one]
   · simp only [h, neg_one_geom_sum]
     split_ifs
     exacts [le_rfl, zero_le_one]
 
+/-- `B.e` takes nonnegative real values. -/
 lemma BadChar.e_nonneg (B : BadChar N) (n : ℕ) : 0 ≤ B.e n := by
   rcases eq_or_ne n 0 with rfl | hn
   · simp only [ArithmeticFunction.map_zero, le_refl]
@@ -135,18 +131,15 @@ lemma BadChar.e_nonneg (B : BadChar N) (n : ℕ) : 0 ≤ B.e n := by
       Finset.prod_nonneg fun p hp ↦ B.e_prime_pow (Nat.prime_of_mem_primeFactors hp) _
 
 lemma BadChar.e_one_eq_one (B : BadChar N) : B.e 1 = 1 := by
-  simp only [e, toArithmeticFunction, ArithmeticFunction.mul_apply, Nat.divisorsAntidiagonal_one,
-    Prod.mk_one_one, ArithmeticFunction.natCoe_apply, ArithmeticFunction.zeta_apply, Nat.cast_ite,
-    Nat.cast_zero, Nat.cast_one, ArithmeticFunction.coe_mk, mul_ite, mul_zero, ite_mul, zero_mul,
-    one_mul, Finset.sum_singleton, Prod.snd_one, one_ne_zero, ↓reduceIte, Prod.fst_one, map_one]
+  simp only [e, toArithmeticFunction, mul_apply, Nat.divisorsAntidiagonal_one, Prod.mk_one_one,
+    natCoe_apply, zeta_apply, Nat.cast_ite, Nat.cast_zero, Nat.cast_one, coe_mk, mul_ite, mul_zero,
+    ite_mul, zero_mul, one_mul, Finset.sum_singleton, Prod.snd_one, one_ne_zero, ↓reduceIte,
+    Prod.fst_one, map_one]
 
-open ArithmeticFunction in
-open scoped LSeries.notation in
 lemma BadChar.e_summable (B : BadChar N) {s : ℂ} (hs : 1 < s.re) : LSeriesSummable (B.e ·) s := by
-  have : LSeriesSummable (toArithmeticFunction (↗B.χ)) s := by
-    refine (LSeriesSummable_congr s fun {n} hn ↦ ?_).mp <| B.χ.LSeriesSummable_of_one_lt_re hs
-    simp only [toArithmeticFunction, coe_mk, hn, ↓reduceIte]
-  exact ArithmeticFunction.LSeriesSummable_mul (LSeriesSummable_zeta_iff.mpr hs) this
+  refine LSeriesSummable_mul (LSeriesSummable_zeta_iff.mpr hs) ?_
+  refine (LSeriesSummable_congr s fun {n} hn ↦ ?_).mp <| B.χ.LSeriesSummable_of_one_lt_re hs
+  simp only [toArithmeticFunction, coe_mk, hn, ↓reduceIte]
 
 /-- If all values of a `ℂ`-valued arithmetic function are nonnegative reals and `x` is a
 real number in the domain of absolute convergence, then the `n`th iterated derivative
