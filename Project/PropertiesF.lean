@@ -191,38 +191,6 @@ lemma BadChar.F_two_pos (B : BadChar N) : 0 < B.F 2 := by
     · exact mul_nonneg (B.e_nonneg n) <|
         (RCLike.inv_pos_of_pos (show 0 < ((n : ℂ) ^ 2) by positivity)).le
 
-section iteratedDeriv
-
-variable {𝕜 F} [NontriviallyNormedField 𝕜] [NormedAddCommGroup F] [NormedSpace 𝕜 F]
-
--- the lemmas in this section should go to Mathlib.Analysis.Calculus.Deriv.Shift
-lemma iteratedDeriv_comp_const_add (n : ℕ) (f : 𝕜 → F) (s : 𝕜) :
-    iteratedDeriv n (fun z ↦ f (s + z)) = fun t ↦ iteratedDeriv n f (s + t) := by
-  induction n with
-  | zero => simp only [iteratedDeriv_zero]
-  | succ n IH =>
-      simp only [iteratedDeriv_succ, IH]
-      ext1 z
-      exact deriv_comp_const_add (iteratedDeriv n f) s z
-
-lemma iteratedDeriv_comp_add_const (n : ℕ) (f : 𝕜 → F) (s : 𝕜) :
-    iteratedDeriv n (fun z ↦ f (z + s)) = fun t ↦ iteratedDeriv n f (t + s) := by
-  induction n with
-  | zero => simp only [iteratedDeriv_zero]
-  | succ n IH =>
-      simp only [iteratedDeriv_succ, IH]
-      ext1 z
-      exact deriv_comp_add_const (iteratedDeriv n f) s z
-
-lemma iteratedDeriv_eq_on_open (n : ℕ) {f g : 𝕜 → F} {s : Set 𝕜} (hs : IsOpen s) (x : s)
-    (hfg : Set.EqOn f g s) : iteratedDeriv n f x = iteratedDeriv n g x := by
-  induction' n with n IH generalizing f g
-  · simpa only [iteratedDeriv_zero] using hfg x.2
-  · simp only [iteratedDeriv_succ']
-    exact IH fun y hy ↦ Filter.EventuallyEq.deriv_eq <|
-      Filter.eventuallyEq_iff_exists_mem.mpr ⟨s, IsOpen.mem_nhds hs hy, hfg⟩
-
-end iteratedDeriv
 
 theorem BadChar.abscissa {N : ℕ} [NeZero N] (B : BadChar N) :
     LSeries.abscissaOfAbsConv B.e < (2 : ℝ) := by
@@ -237,29 +205,30 @@ theorem BadChar.elim (B : BadChar N) : False := by
   have h2 := B.F_neg_two
   have h3 := B.F_differentiable
   have h5 := derivs_from_coeffs B.e (fun n ↦ h1 n) 2 (BadChar.abscissa B)
-  · have := Complex.at_zero_le_of_iteratedDeriv_alternating (f := fun s ↦ B.F (s + 2)) (z := -4)
-      ?_ ?_
-    · simp only [Left.neg_nonpos_iff, Nat.ofNat_nonneg, zero_add, true_implies] at this
-      have h6 := BadChar.F_two_pos B
-      have : 0 < B.F (-2) := by
-        apply lt_of_lt_of_le h6
-        norm_cast at *
-      linarith
-    · apply Differentiable.comp h3
-      simp only [differentiable_id', differentiable_const, Differentiable.add]
-    · intro n _
-      have h55 := h5 n
-      rw [iteratedDeriv_comp_add_const n B.F 2]
-      have := iteratedDeriv_eq_on_open n (f := fun s ↦ B.F (s + 2))
-        (g := fun z ↦ LSeries (fun x ↦ ↑(B.e x)) (↑2 + z)) (s := {s | 1 < (s + 2).re}) ?_ ?_
-          (x := ⟨(0 : ℂ), by simp only [add_re, re_ofNat, Set.mem_setOf_eq, zero_re, zero_add,
-            Nat.one_lt_ofNat]⟩)
-      · rw [this]
-        apply h55
-      · apply isOpen_lt
-        exact continuous_const
-        refine Continuous.comp' (Complex.continuous_re) (continuous_add_right 2)
-      · intro x hx
-        simp only
-        rw [B.F_eq_LSeries (s := x + 2), add_comm]
-        apply hx
+  have h6 : Differentiable ℂ fun s ↦ B.F (s + 2):= sorry
+  have := Complex.at_zero_le_of_iteratedDeriv_alternating h6 (z := -4)
+      (fun n hn ↦ ?_) ?_
+  · simp only [Left.neg_nonpos_iff, Nat.ofNat_nonneg, zero_add, true_implies] at this
+    have h6 := BadChar.F_two_pos B
+    have : 0 < B.F (-2) := by
+      apply lt_of_lt_of_le h6
+      norm_cast at *
+    linarith
+  · apply Differentiable.comp h3
+    simp only [differentiable_id', differentiable_const, Differentiable.add]
+  · intro n _
+    have h55 := h5 n
+    rw [iteratedDeriv_comp_add_const n B.F 2]
+    have := iteratedDeriv_eq_on_open n (f := fun s ↦ B.F (s + 2))
+      (g := fun z ↦ LSeries (fun x ↦ ↑(B.e x)) (↑2 + z)) (s := {s | 1 < (s + 2).re}) ?_ ?_
+        (x := ⟨(0 : ℂ), by simp only [add_re, re_ofNat, Set.mem_setOf_eq, zero_re, zero_add,
+          Nat.one_lt_ofNat]⟩)
+    · rw [this]
+      apply h55
+    · apply isOpen_lt
+      exact continuous_const
+      refine Continuous.comp' (Complex.continuous_re) (continuous_add_right 2)
+    · intro x hx
+      simp only
+      rw [B.F_eq_LSeries (s := x + 2), add_comm]
+      apply hx
