@@ -1,7 +1,7 @@
-import Mathlib.Order.CompletePartialOrder
-import Mathlib.RingTheory.HopfAlgebra
-import Mathlib.Algebra.Lie.OfAssociative
 import Mathlib.Analysis.Complex.TaylorSeries
+import Mathlib.Data.Real.StarOrdered
+import Mathlib.NumberTheory.ArithmeticFunction
+import Mathlib.NumberTheory.LSeries.Deriv
 
 /-!
 ### Auxiliary lemmas
@@ -27,6 +27,35 @@ lemma inv_natCast_pow_ofReal_nonneg {n : ℕ} (hn : n ≠ 0) (x : ℝ) : 0 ≤ (
   exact inv_nonneg_of_nonneg (by positivity)
 
 end Complex
+
+namespace ArithmeticFunction
+
+open Complex
+
+open scoped ComplexOrder
+
+/-- If all values of a `ℂ`-valued arithmetic function are nonnegative reals and `x` is a
+real number in the domain of absolute convergence, then the `n`th iterated derivative
+of the associated L-series is nonnegative real when `n` is even and nonpositive real
+when `n` is odd. -/
+lemma iteratedDeriv_LSeries_alternating (a : ArithmeticFunction ℂ)
+    (hn : ∀ n, 0 ≤ a n) {x : ℝ} (h : LSeries.abscissaOfAbsConv (a ·) < x) (n : ℕ) :
+    0 ≤ (-1) ^ n * iteratedDeriv n (LSeries (a ·)) x := by
+  rw [LSeries_iteratedDeriv _ h, LSeries, ← mul_assoc, ← pow_add, Even.neg_one_pow ⟨n, rfl⟩,
+    one_mul]
+  refine tsum_nonneg fun k ↦ ?_
+  rw [LSeries.term_def]
+  split
+  · exact le_rfl
+  · refine mul_nonneg ?_ <| inv_natCast_pow_ofReal_nonneg (by assumption) x
+    induction n with
+    | zero => simp only [Function.iterate_zero, id_eq]; exact hn k
+    | succ n IH =>
+        rw [Function.iterate_succ_apply']
+        refine mul_nonneg ?_ IH
+        simp only [← natCast_log, zero_le_real, Real.log_natCast_nonneg]
+
+end ArithmeticFunction
 
 
 section Topology
