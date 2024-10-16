@@ -109,12 +109,12 @@ So it suffices to prove that if $\chi$ is a quadratic character we have $L(\chi,
  \label{zero_of_F}
  \lean{BadChar.F_neg_two}
  \leanok
+ \uses{def:bad_char_F}
  We have $F(-2) = 0$.
 \end{lemma}
 
 \begin{proof}
  \leanok
- \uses{def:bad_char_F}
  Follows from the trivial zeroes of Riemann zeta.
 \end{proof}
 
@@ -145,11 +145,11 @@ So it suffices to prove that if $\chi$ is a quadratic character we have $L(\chi,
 \end{proof}
 
 \begin{lemma} \label{positivity_from_derivs}
-  \lean{Complex.at_zero_le_of_iteratedDeriv_alternating}
+  \lean{Complex.apply_le_of_iteratedDeriv_alternating}
   \leanok
-  An entire function $f$ whose iterated derivatives at zero are all real with alternating signs
-  (except possibly the value itself) has values of the form $f(0) + \text{nonneg. real}$
-  along the nonpositive real axis.
+  An entire function $f$ whose iterated derivatives at $s$ are all real with alternating signs
+  (except possibly the value itself) has values of the form $f(s) + \text{nonneg. real}$
+  along the nonpositive real axis shfited by~$s$.
 \end{lemma}
 
 \begin{proof}
@@ -157,7 +157,7 @@ So it suffices to prove that if $\chi$ is a quadratic character we have $L(\chi,
   This follows by considering the power series expansion at zero.
 \end{proof}
 
-\begin{lemma} \label{derivs_from_coeffs}
+\begin{lemma} \label{ArithmeticFunction.iteratedDeriv_LSeries_alternating}
   \lean{derivs_from_coeffs}
   \leanok
   If $a \colon \N \to \C$ is an arithmetic function with $a(1) > 0$ and $a(n) \ge 0$ for all $n \ge 2$
