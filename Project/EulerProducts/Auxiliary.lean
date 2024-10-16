@@ -285,6 +285,18 @@ theorem at_zero_le_of_iteratedDeriv_nonneg {f : ℂ → ℂ} (hf : Differentiabl
       exact deriv_sub_const (f 0)
   exact sub_nonneg.mp <| nonneg_of_iteratedDeriv_nonneg (hf.sub_const (f 0)) h' hz
 
+/-- An entire function whose iterated derivatives at `s`` are all nonnegative real (except
+possibly the value itself) has values of the form `f s + nonneg. real` along the set `s + ℝ≥0`. -/
+theorem apply_le_of_iteratedDeriv_nonneg {f : ℂ → ℂ} {s : ℂ} (hf : Differentiable ℂ f)
+    (h : ∀ n ≠ 0, 0 ≤ iteratedDeriv n f s) {z : ℂ} (hz : s ≤ z) : f s ≤ f z := by
+  let g := fun z ↦ f (s + z)
+  convert at_zero_le_of_iteratedDeriv_nonneg (f := g) ?_ (fun n hn ↦ ?_) ?_ using 1
+  · simp only [add_zero, g]
+  · rw [show z = s + (-s + z) by ring]
+  · exact Differentiable.comp hf <| Differentiable.const_add differentiable_id s
+  · simpa only [iteratedDeriv_comp_const_add, add_zero, g] using h n hn
+  · exact le_neg_add_iff_le.mpr hz
+
 /-- An entire function whose iterated derivatives at zero are all real with alternating signs
 (except possibly the value itself) has values of the form `f 0 + nonneg. real` along the nonpositive
 real axis. -/
@@ -296,5 +308,18 @@ theorem at_zero_le_of_iteratedDeriv_alternating {f : ℂ → ℂ} (hf : Differen
   · simp only [F, neg_zero]
   · simp only [F, neg_neg]
   · simpa only [F, iteratedDeriv_comp_neg, neg_zero] using h n hn
+
+/-- An entire function whose iterated derivatives at `s` are all real with alternating signs
+(except possibly the value itself) has values of the form `f s + nonneg. real` along the
+set `s - ℝ≥0`. -/
+theorem apply_le_of_iteratedDeriv_alternating {f : ℂ → ℂ} {s : ℂ} (hf : Differentiable ℂ f)
+    (h : ∀ n ≠ 0, 0 ≤ (-1) ^ n * iteratedDeriv n f s) {z : ℂ} (hz : z ≤ s) : f s ≤ f z := by
+  let g := fun z ↦ f (s + z)
+  convert at_zero_le_of_iteratedDeriv_alternating (f := g) ?_ (fun n hn ↦ ?_) ?_ using 1
+  · simp only [add_zero, g]
+  · rw [show z = s + (-s + z) by ring]
+  · exact Differentiable.comp hf <| Differentiable.const_add differentiable_id s
+  · simpa only [iteratedDeriv_comp_const_add, add_zero, g] using h n hn
+  · exact neg_add_nonpos_iff.mpr hz
 
 end Complex
