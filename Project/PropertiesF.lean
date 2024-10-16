@@ -201,34 +201,10 @@ theorem BadChar.abscissa {N : ℕ} [NeZero N] (B : BadChar N) :
 
 /-- The goal: bad characters do not exist. -/
 theorem BadChar.elim (B : BadChar N) : False := by
-  have h1 := B.e_nonneg
-  have h2 := B.F_neg_two
-  have h3 := B.F_differentiable
-  have h5 := derivs_from_coeffs B.e (fun n ↦ h1 n) 2 (BadChar.abscissa B)
-  have h6 : Differentiable ℂ fun s ↦ B.F (s + 2):= sorry
-  have := Complex.at_zero_le_of_iteratedDeriv_alternating h6 (z := -4)
-      (fun n hn ↦ ?_) ?_
-  · simp only [Left.neg_nonpos_iff, Nat.ofNat_nonneg, zero_add, true_implies] at this
-    have h6 := BadChar.F_two_pos B
-    have : 0 < B.F (-2) := by
-      apply lt_of_lt_of_le h6
-      norm_cast at *
-    linarith
-  · apply Differentiable.comp h3
-    simp only [differentiable_id', differentiable_const, Differentiable.add]
-  · intro n _
-    have h55 := h5 n
-    rw [iteratedDeriv_comp_add_const n B.F 2]
-    have := iteratedDeriv_eq_on_open n (f := fun s ↦ B.F (s + 2))
-      (g := fun z ↦ LSeries (fun x ↦ ↑(B.e x)) (↑2 + z)) (s := {s | 1 < (s + 2).re}) ?_ ?_
-        (x := ⟨(0 : ℂ), by simp only [add_re, re_ofNat, Set.mem_setOf_eq, zero_re, zero_add,
-          Nat.one_lt_ofNat]⟩)
-    · rw [this]
-      apply h55
-    · apply isOpen_lt
-      exact continuous_const
-      refine Continuous.comp' (Complex.continuous_re) (continuous_add_right 2)
-    · intro x hx
-      simp only
-      rw [B.F_eq_LSeries (s := x + 2), add_comm]
-      apply hx
+  have h n (_ : n ≠ 0) :  0 ≤ (-1) ^ n * iteratedDeriv n B.F 2 := by
+    have hs : IsOpen {s : ℂ | 1 < s.re} := by refine isOpen_lt ?_ ?_ <;> fun_prop
+    convert derivs_from_coeffs B.e B.e_nonneg 2 B.abscissa n using 2
+    convert iteratedDeriv_eq_on_open n hs ⟨(2 : ℂ), ?_⟩ fun _ ↦ B.F_eq_LSeries
+    simp only [Set.mem_setOf_eq, re_ofNat, Nat.one_lt_ofNat]
+  exact (B.F_two_pos.trans_le <|
+    B.F_neg_two ▸ apply_le_of_iteratedDeriv_alternating B.F_differentiable h (by norm_num)).false
