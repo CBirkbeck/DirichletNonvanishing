@@ -85,6 +85,18 @@ open ArithmeticFunction
 /-- The complex-valued arithmetic function whose L-series is `B.F`. -/
 def BadChar.e (B : BadChar N) : ArithmeticFunction ℂ := .zeta * toArithmeticFunction (B.χ ·)
 
+lemma BadChar.e_summable (B : BadChar N) {s : ℂ} (hs : 1 < s.re) : LSeriesSummable (B.e ·) s := by
+  refine LSeriesSummable_mul (LSeriesSummable_zeta_iff.mpr hs) ?_
+  refine (LSeriesSummable_congr s fun {n} hn ↦ ?_).mp <| B.χ.LSeriesSummable_of_one_lt_re hs
+  simp only [toArithmeticFunction, coe_mk, hn, ↓reduceIte]
+
+lemma BadChar.abscissa {N : ℕ} [NeZero N] (B : BadChar N) :
+    LSeries.abscissaOfAbsConv B.e < (2 : ℝ) := by
+  suffices LSeries.abscissaOfAbsConv B.e ≤ (3 / 2 : ℝ) from this.trans_lt <| by norm_cast; norm_num
+  convert LSeriesSummable.abscissaOfAbsConv_le (s := (3 / 2 : ℝ)) ?_
+  exact B.e_summable (s := (3 / 2 : ℝ))
+    (by simp only [ofReal_div, ofReal_ofNat, div_ofNat_re, re_ofNat]; norm_num)
+
 /-- `B.F` agrees with the L-series of `B.e` on `1 < s.re`. -/
 lemma BadChar.F_eq_LSeries (B : BadChar N) {s : ℂ} (hs : 1 < s.re) : B.F s = LSeries B.e s := by
   have (n : ℕ) : B.e n = LSeries.convolution (fun _ ↦ (1 : ℂ)) (B.χ ·) n := by
@@ -136,32 +148,6 @@ lemma BadChar.e_one_eq_one (B : BadChar N) : B.e 1 = 1 := by
     ite_mul, zero_mul, one_mul, Finset.sum_singleton, Prod.snd_one, one_ne_zero, ↓reduceIte,
     Prod.fst_one, map_one]
 
-lemma BadChar.e_summable (B : BadChar N) {s : ℂ} (hs : 1 < s.re) : LSeriesSummable (B.e ·) s := by
-  refine LSeriesSummable_mul (LSeriesSummable_zeta_iff.mpr hs) ?_
-  refine (LSeriesSummable_congr s fun {n} hn ↦ ?_).mp <| B.χ.LSeriesSummable_of_one_lt_re hs
-  simp only [toArithmeticFunction, coe_mk, hn, ↓reduceIte]
-
-/-- If all values of a `ℂ`-valued arithmetic function are nonnegative reals and `x` is a
-real number in the domain of absolute convergence, then the `n`th iterated derivative
-of the associated L-series is nonnegative real when `n` is even and nonpositive real
-when `n` is odd. -/
-lemma ArithmeticFunction.iteratedDeriv_LSeries_alternating (a : ArithmeticFunction ℂ)
-    (hn : ∀ n, 0 ≤ a n) {x : ℝ} (h : LSeries.abscissaOfAbsConv (a ·) < x) (n : ℕ) :
-    0 ≤ (-1) ^ n * iteratedDeriv n (LSeries (a ·)) x := by
-  rw [LSeries_iteratedDeriv _ h, LSeries, ← mul_assoc, ← pow_add, Even.neg_one_pow ⟨n, rfl⟩,
-    one_mul]
-  refine tsum_nonneg fun k ↦ ?_
-  rw [LSeries.term_def]
-  split
-  · exact le_rfl
-  · refine mul_nonneg ?_ <| inv_natCast_pow_ofReal_nonneg (by assumption) x
-    induction n with
-    | zero => simp only [Function.iterate_zero, id_eq]; exact hn k
-    | succ n IH =>
-        rw [Function.iterate_succ_apply']
-        refine mul_nonneg ?_ IH
-        simp only [← natCast_log, zero_le_real, Real.log_natCast_nonneg]
-
 lemma BadChar.F_two_pos (B : BadChar N) : 0 < B.F 2 := by
   rw [B.F_eq_LSeries (by norm_num), LSeries]
   refine tsum_pos (B.e_summable (by norm_num)) (fun n ↦ ?_) 1 ?_ ; swap
@@ -170,16 +156,7 @@ lemma BadChar.F_two_pos (B : BadChar N) : 0 < B.F 2 := by
   · simp only [LSeries.term_def, cpow_ofNat]
     split
     · simp only [le_refl]
-    · exact mul_nonneg (B.e_nonneg n) <|
-        (RCLike.inv_pos_of_pos (show 0 < ((n : ℂ) ^ 2) by positivity)).le
-
-
-theorem BadChar.abscissa {N : ℕ} [NeZero N] (B : BadChar N) :
-    LSeries.abscissaOfAbsConv B.e < (2 : ℝ) := by
-  suffices LSeries.abscissaOfAbsConv B.e ≤ (3 / 2 : ℝ) from this.trans_lt <| by norm_cast; norm_num
-  convert LSeriesSummable.abscissaOfAbsConv_le (s := (3 / 2 : ℝ)) ?_
-  exact B.e_summable (s := (3 / 2 : ℝ))
-    (by simp only [ofReal_div, ofReal_ofNat, div_ofNat_re, re_ofNat]; norm_num)
+    · exact mul_nonneg (B.e_nonneg n) <| (RCLike.inv_pos_of_pos (by positivity)).le
 
 /-- The goal: bad characters do not exist. -/
 theorem BadChar.elim (B : BadChar N) : False := by

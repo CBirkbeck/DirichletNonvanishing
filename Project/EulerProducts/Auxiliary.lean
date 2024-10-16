@@ -21,10 +21,10 @@ lemma summable_im {α : Type _} {f : α → ℂ} (h : Summable f) : Summable fun
 
 open scoped ComplexOrder
 
-lemma inv_natCast_pow_ofReal_nonneg {n : ℕ} (hn : n ≠ 0) (x : ℝ) : 0 ≤ ((n : ℂ) ^ (x : ℂ))⁻¹ := by
-  rw [show (n : ℂ) ^ (x : ℂ) = (n : ℝ) ^ (x : ℂ) from rfl, ← ofReal_cpow n.cast_nonneg',
-    ← ofReal_inv, zero_le_real]
-  exact inv_nonneg_of_nonneg (by positivity)
+lemma inv_natCast_pow_ofReal_pos {n : ℕ} (hn : n ≠ 0) (x : ℝ) : 0 < ((n : ℂ) ^ (x : ℂ))⁻¹ := by
+  refine RCLike.inv_pos_of_pos ?_
+  rw [show (n : ℂ) ^ (x : ℂ) = (n : ℝ) ^ (x : ℂ) from rfl, ← ofReal_cpow n.cast_nonneg']
+  positivity
 
 end Complex
 
@@ -47,7 +47,7 @@ lemma iteratedDeriv_LSeries_alternating (a : ArithmeticFunction ℂ)
   rw [LSeries.term_def]
   split
   · exact le_rfl
-  · refine mul_nonneg ?_ <| inv_natCast_pow_ofReal_nonneg (by assumption) x
+  · refine mul_nonneg ?_ <| (inv_natCast_pow_ofReal_pos (by assumption) x).le
     induction n with
     | zero => simp only [Function.iterate_zero, id_eq]; exact hn k
     | succ n IH =>
