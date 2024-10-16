@@ -182,56 +182,54 @@ lemma derivs_from_coeffs (a : ArithmeticFunction ℂ) (hn : ∀ n, 0 ≤ a n) (x
 
 lemma BadChar.F_two_pos (B : BadChar N) : 0 < B.F 2 := by
   rw [B.F_eq_LSeries (by norm_num), LSeries]
-  refine tsum_pos (B.e_summable (by norm_num)) (fun i ↦ ?_) 1 ?_ ; swap
+  refine tsum_pos (B.e_summable (by norm_num)) (fun n ↦ ?_) 1 ?_ ; swap
   · simp only [LSeries.term_def, one_ne_zero, ↓reduceIte, e_one_eq_one, Nat.cast_one, cpow_ofNat,
       one_pow, ne_eq, not_false_eq_true, div_self, zero_lt_one]
   · simp only [LSeries.term_def, cpow_ofNat]
     split
     · simp only [le_refl]
-    · refine mul_nonneg (B.e_nonneg i) ?_
-      simp only [le_def, zero_re, inv_re, zero_im, inv_im]
-      constructor
-      · apply div_nonneg _ (normSq_nonneg _)
-        norm_cast
-        exact sq_nonneg i
-      · norm_cast
-        simp only [neg_zero, Nat.cast_pow, map_pow, normSq_natCast, zero_div]
+    · exact mul_nonneg (B.e_nonneg n) <|
+        (RCLike.inv_pos_of_pos (show 0 < ((n : ℂ) ^ 2) by positivity)).le
 
-lemma iteratedDeriv_comp_const_add (n : ℕ) (f : ℂ → ℂ) (s : ℂ) :
-  iteratedDeriv n f s = iteratedDeriv n (fun z ↦ f (s + z)) 0 := by
-  induction' n with n IH generalizing f
-  · simp only [iteratedDeriv_zero, add_zero]
-  · simp_rw [iteratedDeriv_succ']
-    simp_rw [IH (deriv f), ← iteratedDerivWithin_univ ]
-    apply iteratedDerivWithin_congr
-    · exact uniqueDiffOn_univ
-    · intro x _
-      rw [deriv_comp_const_add]
-    · simp only [Set.mem_univ]
+section iteratedDeriv
 
-lemma iteratedDeriv_eq_on_open (n : ℕ) {f g : ℂ → ℂ} {s : Set ℂ} (hs : IsOpen s) (x : s)
+variable {𝕜 F} [NontriviallyNormedField 𝕜] [NormedAddCommGroup F] [NormedSpace 𝕜 F]
+
+-- the lemmas in this section should go to Mathlib.Analysis.Calculus.Deriv.Shift
+lemma iteratedDeriv_comp_const_add (n : ℕ) (f : 𝕜 → F) (s : 𝕜) :
+    iteratedDeriv n (fun z ↦ f (s + z)) = fun t ↦ iteratedDeriv n f (s + t) := by
+  induction n with
+  | zero => simp only [iteratedDeriv_zero]
+  | succ n IH =>
+      simp only [iteratedDeriv_succ, IH]
+      ext1 z
+      exact deriv_comp_const_add (iteratedDeriv n f) s z
+
+lemma iteratedDeriv_comp_add_const (n : ℕ) (f : 𝕜 → F) (s : 𝕜) :
+    iteratedDeriv n (fun z ↦ f (z + s)) = fun t ↦ iteratedDeriv n f (t + s) := by
+  induction n with
+  | zero => simp only [iteratedDeriv_zero]
+  | succ n IH =>
+      simp only [iteratedDeriv_succ, IH]
+      ext1 z
+      exact deriv_comp_add_const (iteratedDeriv n f) s z
+
+lemma iteratedDeriv_eq_on_open (n : ℕ) {f g : 𝕜 → F} {s : Set 𝕜} (hs : IsOpen s) (x : s)
     (hfg : Set.EqOn f g s) : iteratedDeriv n f x = iteratedDeriv n g x := by
   induction' n with n IH generalizing f g
-  · simp only [iteratedDeriv_zero]
-    apply hfg x.2
-  · simp_rw [iteratedDeriv_succ']
-    apply IH
-    intro y hy
-    apply Filter.EventuallyEq.deriv_eq
-    rw [@Filter.eventuallyEq_iff_exists_mem]
-    refine ⟨s, IsOpen.mem_nhds hs hy, hfg⟩
+  · simpa only [iteratedDeriv_zero] using hfg x.2
+  · simp only [iteratedDeriv_succ']
+    exact IH fun y hy ↦ Filter.EventuallyEq.deriv_eq <|
+      Filter.eventuallyEq_iff_exists_mem.mpr ⟨s, IsOpen.mem_nhds hs hy, hfg⟩
 
-open scoped LSeries.notation in
-theorem BadChar.abscissa {N : ℕ} [inst : NeZero N] (B : BadChar N) :
-    LSeries.abscissaOfAbsConv ↗B.e < 2 := by
-  have H : LSeries.abscissaOfAbsConv ↗B.e ≤ (3 / 2 : ℝ) := by
-    convert LSeriesSummable.abscissaOfAbsConv_le (s := (3 / 2 : ℝ)) ?_
-    exact B.e_summable (s := (3 / 2 : ℝ))
-            (by simp only [ofReal_div, ofReal_ofNat, div_ofNat_re, re_ofNat]; norm_num)
-  refine H.trans_lt ?_
-  rw [show (2 : EReal) = (2 : ℝ) from rfl]
-  norm_cast
-  norm_num
+end iteratedDeriv
+
+theorem BadChar.abscissa {N : ℕ} [NeZero N] (B : BadChar N) :
+    LSeries.abscissaOfAbsConv B.e < (2 : ℝ) := by
+  suffices LSeries.abscissaOfAbsConv B.e ≤ (3 / 2 : ℝ) from this.trans_lt <| by norm_cast; norm_num
+  convert LSeriesSummable.abscissaOfAbsConv_le (s := (3 / 2 : ℝ)) ?_
+  exact B.e_summable (s := (3 / 2 : ℝ))
+    (by simp only [ofReal_div, ofReal_ofNat, div_ofNat_re, re_ofNat]; norm_num)
 
 /-- The goal: bad characters do not exist. -/
 theorem BadChar.elim (B : BadChar N) : False := by
@@ -251,7 +249,7 @@ theorem BadChar.elim (B : BadChar N) : False := by
       simp only [differentiable_id', differentiable_const, Differentiable.add]
     · intro n _
       have h55 := h5 n
-      rw [iteratedDeriv_comp_const_add] at h55
+      rw [iteratedDeriv_comp_add_const n B.F 2]
       have := iteratedDeriv_eq_on_open n (f := fun s ↦ B.F (s + 2))
         (g := fun z ↦ LSeries (fun x ↦ ↑(B.e x)) (↑2 + z)) (s := {s | 1 < (s + 2).re}) ?_ ?_
           (x := ⟨(0 : ℂ), by simp only [add_re, re_ofNat, Set.mem_setOf_eq, zero_re, zero_add,
