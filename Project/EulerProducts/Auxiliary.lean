@@ -49,7 +49,7 @@ lemma iteratedDeriv_LSeries_alternating (a : ArithmeticFunction ℂ)
   · exact le_rfl
   · refine mul_nonneg ?_ <| (inv_natCast_pow_ofReal_pos (by assumption) x).le
     induction n with
-    | zero => simp only [Function.iterate_zero, id_eq]; exact hn k
+    | zero => exact hn k
     | succ n IH =>
         rw [Function.iterate_succ_apply']
         refine mul_nonneg ?_ IH
@@ -63,7 +63,6 @@ section Topology
 open Filter
 
 namespace Asymptotics
-
 
 
 end Asymptotics
@@ -86,12 +85,11 @@ lemma ContinuousAt.isBigO {f : ℂ → ℂ} {z : ℂ} (hf : ContinuousAt f z) :
     · simp [Function.comp_def, hf]
   simp_rw [Metric.continuousAt_iff', dist_eq_norm_sub, zero_add] at hf
   specialize hf 1 zero_lt_one
-  refine ⟨‖f z‖ + 1, by positivity, ?_⟩
-  refine Eventually.mp hf <| Eventually.of_forall fun w hw ↦ le_of_lt ?_
+  refine ⟨‖f z‖ + 1, by positivity, Eventually.mp hf <| Eventually.of_forall fun w hw ↦ le_of_lt ?_⟩
   calc ‖f (w + z)‖
     _ ≤ ‖f z‖ + ‖f (w + z) - f z‖ := norm_le_insert' ..
     _ < ‖f z‖ + 1 := add_lt_add_left hw _
-    _ = _ := by simp only [norm_one, mul_one]
+    _ = _ := by rw [norm_one, mul_one]
 
 lemma Complex.isBigO_comp_ofReal {f g : ℂ → ℂ} {x : ℝ} (h : f =O[𝓝 (x : ℂ)] g) :
     (fun y : ℝ ↦ f y) =O[𝓝 x] (fun y : ℝ ↦ g y) :=
@@ -221,8 +219,7 @@ lemma realValued_of_iteratedDeriv_real_on_ball {f : ℂ → ℂ} ⦃r : ℝ⦄ {
     ∃ F : ℝ → ℝ, DifferentiableOn ℝ F (Set.Ioo (c - r) (c + r)) ∧
       Set.EqOn (f ∘ ofReal) (ofReal ∘ F) (Set.Ioo (c - r) (c + r)) := by
   have Hz : ∀ x ∈ Set.Ioo (c - r) (c + r), (x : ℂ) ∈ Metric.ball (c : ℂ) r := by
-    intro x hx
-    refine Metric.mem_ball.mpr ?_
+    refine fun x hx ↦ Metric.mem_ball.mpr ?_
     rw [dist_eq, ← ofReal_sub, abs_ofReal, abs_sub_lt_iff, sub_lt_iff_lt_add', sub_lt_comm]
     exact and_comm.mpr hx
   have H ⦃z : ℂ⦄ (hz : z ∈ Metric.ball (c : ℂ) r) := taylorSeries_eq_on_ball' hz hf

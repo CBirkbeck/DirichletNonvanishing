@@ -100,7 +100,7 @@ theorem exp_sum_primes_log_eq_tsum {f : ℕ →*₀ ℂ} (hsum : Summable (‖f 
   have help (n : ℕ) : n.primesBelow.prod (fun p ↦ cexp (-log (1 - f p))) =
       n.primesBelow.prod fun p ↦ (1 - f p)⁻¹ := by
     refine Finset.prod_congr rfl (fun p hp ↦ ?_)
-    rw [exp_neg, exp_log ?_]
+    rw [exp_neg, exp_log]
     rw [ne_eq, sub_eq_zero, ← ne_eq]
     exact fun h ↦ (norm_one (α := ℂ) ▸ h.symm ▸ hs (Nat.prime_of_mem_primesBelow hp).one_lt).false
   simp_rw [help] at H
