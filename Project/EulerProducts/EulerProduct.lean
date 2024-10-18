@@ -106,7 +106,7 @@ theorem LSeries_eulerProduct' {N : ℕ} (χ : DirichletCharacter ℂ N) {s : ℂ
     summable_dirichletSummand χ hs -- where does the `x✝: ℕ` come from??
   ext n
   rcases eq_or_ne n 0 with rfl | hn
-  · simp only [term_zero, map_zero]
+  · rw [term_zero, map_zero]
   · simp [hn, dirichletSummandHom, div_eq_mul_inv, cpow_neg]
 
 end DirichletCharacter
